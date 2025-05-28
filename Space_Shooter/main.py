@@ -11,27 +11,25 @@ Entity.default_shader = lit_with_shadows_shader
 ground = Entity(model='plane', collider='box', scale=2048, texture='grass', texture_scale=(4,4))
 
 editor_camera = EditorCamera(enabled=False, ignore_paused=True)
-player = FirstPersonController(model='cube', color=color.blue, collider='box')
+player = Entity(model='sphere', color=color.blue, collider='box')
 player.visible_self = editor_camera.enabled
 # Ajoute le visuel voulu comme enfant
-player_body = Entity(parent=player, model='cube', texture = 'shore', position=(0,0,0), scale=(2,0.2,1), color=color.blue, y=1)
+player_body = Entity(parent=player, model='cube', texture='shore', position=(0,0,0), scale=(2,0.2,1), color=color.blue)
 
 player.speed = 20
 player.update = Func(lambda: None)  # désactive le comportement FPS par défaut
-player.collider = BoxCollider(player, Vec3(0,1,0), Vec3(1,2,1))
+player.collider = BoxCollider(player, Vec3(0,0,0), Vec3(2,1,2))
+player.collider.visible = True
+player.gun = Entity(model='scale_gizmo', parent=player, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
 
 # Joueur 2 (rouge)
 player2 = player2 = Entity(model='cube', color=color.orange, position=(5, 2, 0))
 player2.speed = 20
 player2.visible_self = editor_camera.enabled
-player2_body = Entity(parent=player2, model='cube', texture = 'shore', position=(0,0,0), scale=(2,0.2,1), color=color.red, y=1)
+player2_body = Entity(parent=player2, model='cube', texture = 'shore', position=(0,0,0), scale=(2,0.2,1), color=color.red)
 player2.update = Func(lambda: None)  # désactive le comportement FPS par défaut
 player2.collider = BoxCollider(player, Vec3(0,1,0), Vec3(1,2,1))
-player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,1,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
-
-
-gun = Entity(model='scale_gizmo', parent=player, position=(0,1,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
-gun.muzzle_flash = Entity(parent=gun, z=1, world_scale=.5, model='quad', color=color.yellow, enabled=False)
+player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
 
 lazer = Entity()
 
@@ -99,7 +97,7 @@ p_text = Text(
 )
 
 crosshair_p1 = Text(
-    text='+',
+    text='||',
     position=(-0.445, 0.12),  # (x, y) de -1 à 1, coin haut gauche
     origin=(0,0),
     scale=1,
@@ -107,15 +105,13 @@ crosshair_p1 = Text(
     font ='VeraMono.ttf',
 )
 crosshair_p2 = Text(
-    text='+',
+    text='||',
     position=(0.445, 0.13),  # (x, y) de -1 à 1, coin haut gauche
     origin=(0,0),
     scale=1,
     color=color.white,
     font ='VeraMono.ttf',
 )
-
-player.cursor.enabled = False
 
 # Variables pour stocker la rotation
 pivot_rotation_x = 10
@@ -164,7 +160,7 @@ def update():
             player2.speed = 10
     # ----- Déplacement dans la direction du gun -----
     
-    player.position += gun.forward * speed * time.dt
+    player.position += player.gun.forward * speed * time.dt
     player2.position += player2.gun.forward * player2.speed * time.dt
 
     # ----- Rotation caméra -----
@@ -183,10 +179,10 @@ def update():
     # ----- Tir -----
     if held_keys['f']:
         lazer_entity = Lazer(
-            direction=gun.forward,
-            position=gun.world_position,
+            direction=player.gun.forward,
+            position=player.gun.world_position,
             color=color.red,
-            rotation=gun.world_rotation  # <-- passe la rotation du gun
+            rotation=player.gun.world_rotation  # <-- passe la rotation du gun
         )
 
     if held_keys['k']:
@@ -197,20 +193,6 @@ def update():
             color=color.red,
             rotation=player2.gun.world_rotation  # <-- passe la rotation du gun
         )
-
-
-def shoot():
-    if not gun.on_cooldown:
-        # print('shoot')
-        gun.on_cooldown = True
-        gun.muzzle_flash.enabled=True
-        from ursina.prefabs.ursfx import ursfx
-        ursfx([(0.0, 0.0), (0.1, 0.9), (0.15, 0.75), (0.3, 0.14), (0.6, 0.0)], volume=0.5, wave='noise', pitch=random.uniform(-13,-12), pitch_change=-12, speed=3.0)
-        invoke(gun.muzzle_flash.disable, delay=.05)
-        invoke(setattr, gun, 'on_cooldown', False, delay=.15)
-        if mouse.hovered_entity and hasattr(mouse.hovered_entity, 'hp'):
-            mouse.hovered_entity.hp -= 10
-            mouse.hovered_entity.blink(color.red)
 
 class Lazer(Entity):
     def __init__(self, direction=Vec3(0,0,-1), position=Vec3(0,0,0), color=color.red, rotation=Vec3(0,0,0)):
@@ -236,9 +218,6 @@ class Lazer(Entity):
 def pause_input(key):
     if key == 'tab':    # press tab to toggle edit/play mode
         editor_camera.enabled = not editor_camera.enabled
-
-        #player.visible_self = editor_camera.enabled
-        player.cursor.enabled = not editor_camera.enabled
         #gun.enabled = not editor_camera.enabled
         mouse.locked = not editor_camera.enabled
         editor_camera.position = player.position
@@ -251,8 +230,5 @@ pause_handler = Entity(ignore_paused=True, input=pause_input)
 sun = DirectionalLight()
 sun.look_at(Vec3(1,-1,-1))
 Sky(texture='sky_sunset')
-
-# Optionnel : désactive le curseur du joueur
-player.cursor.enabled = False
 
 app.run()
