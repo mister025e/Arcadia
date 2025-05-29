@@ -11,7 +11,7 @@ Entity.default_shader = lit_with_shadows_shader
 ground = Entity(model='plane', collider='box', scale=2048, texture='grass', texture_scale=(4,4))
 
 editor_camera = EditorCamera(enabled=False, ignore_paused=True)
-player = Entity(model='sphere', color=color.blue, collider='box')
+player = FirstPersonController(model='cube', color=color.blue, collider='box')
 player.visible_self = editor_camera.enabled
 # Ajoute le visuel voulu comme enfant
 player_body = Entity(parent=player, model='cube', texture='shore', position=(0,0,0), scale=(2,0.2,1), color=color.blue)
@@ -19,11 +19,11 @@ player_body = Entity(parent=player, model='cube', texture='shore', position=(0,0
 player.speed = 20
 player.update = Func(lambda: None)  # désactive le comportement FPS par défaut
 player.collider = BoxCollider(player, Vec3(0,0,0), Vec3(2,1,2))
-player.collider.visible = True
+#player.collider.visible = True
 player.gun = Entity(model='scale_gizmo', parent=player, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
 
 # Joueur 2 (rouge)
-player2 = player2 = Entity(model='cube', color=color.orange, position=(5, 2, 0))
+player2 = Entity(model='cube', color=color.orange, position=(5, 2, 0))
 player2.speed = 20
 player2.visible_self = editor_camera.enabled
 player2_body = Entity(parent=player2, model='cube', texture = 'shore', position=(0,0,0), scale=(2,0.2,1), color=color.red)
@@ -33,6 +33,8 @@ player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,0,0), scal
 
 lazer = Entity()
 
+# Crée un pivot pour la caméra autour du joueur
+# Supprime la display region de la caméra Ursina
 
 for i in range(512):
     scale_x_value = random.uniform(2,30)
@@ -47,10 +49,6 @@ for i in range(512):
         color=color.red
         )
 
-# Crée un pivot pour la caméra autour du joueur
-# Supprime la display region de la caméra Ursina
-base.win.remove_display_region(base.camNode.get_display_region(0))
-
 # Créer un second DisplayRegion (vue droite)
 dr1 = base.win.make_display_region(0, 0.5, 0, 1)
 dr1.set_sort(0)
@@ -62,12 +60,14 @@ lens1 = PerspectiveLens()
 lens1.set_aspect_ratio(window.aspect_ratio / 2)
 cam_node1 = Camera('cam1', lens1)
 cam1 = NodePath(cam_node1)
+cam1.reparent_to(render)
 dr1.set_camera(cam1)
 
 lens2 = PerspectiveLens()
 lens2.set_aspect_ratio(window.aspect_ratio / 2)
 cam_node2 = Camera('cam2', lens2)
 cam2 = NodePath(cam_node2)
+cam2.reparent_to(render)
 dr2.set_camera(cam2)
 
 # Position caméras
@@ -193,6 +193,7 @@ def update():
             color=color.red,
             rotation=player2.gun.world_rotation  # <-- passe la rotation du gun
         )
+    #print(f"{len(scene.children)} entités dans la scène")
 
 class Lazer(Entity):
     def __init__(self, direction=Vec3(0,0,-1), position=Vec3(0,0,0), color=color.red, rotation=Vec3(0,0,0)):
@@ -230,5 +231,8 @@ pause_handler = Entity(ignore_paused=True, input=pause_input)
 sun = DirectionalLight()
 sun.look_at(Vec3(1,-1,-1))
 Sky(texture='sky_sunset')
+
+base.win.remove_display_region(base.camNode.get_display_region(0))
+player.cursor.enabled = False
 
 app.run()
