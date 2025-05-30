@@ -9,6 +9,7 @@ random.seed(0)
 Entity.default_shader = lit_with_shadows_shader
 
 ground = Entity(model='plane', collider='box', scale=2048, texture='grass', texture_scale=(4,4))
+ground.collider.visible = True
 
 editor_camera = EditorCamera(enabled=False, ignore_paused=True)
 player = FirstPersonController(model='cube', color=color.blue, collider='box')
@@ -18,8 +19,8 @@ player_body = Entity(parent=player, model='cube', texture='shore', position=(0,0
 
 player.speed = 20
 player.update = Func(lambda: None)  # désactive le comportement FPS par défaut
-player.collider = BoxCollider(player, Vec3(0,0,0), Vec3(2,1,2))
-#player.collider.visible = True
+player.collider = BoxCollider(player, Vec3(0,0,0), Vec3(2,.5,2))
+player.collider.visible = True
 player.gun = Entity(model='scale_gizmo', parent=player, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
 
 # Joueur 2 (rouge)
@@ -28,7 +29,8 @@ player2.speed = 20
 player2.visible_self = editor_camera.enabled
 player2_body = Entity(parent=player2, model='cube', texture = 'shore', position=(0,0,0), scale=(2,0.2,1), color=color.red)
 player2.update = Func(lambda: None)  # désactive le comportement FPS par défaut
-player2.collider = BoxCollider(player, Vec3(0,1,0), Vec3(1,2,1))
+player2.collider = BoxCollider(player2, Vec3(0,0,0), Vec3(2,.5,2))
+player2.collider.visible = True
 player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
 
 lazer = Entity()
@@ -42,12 +44,15 @@ for i in range(512):
         x=random.uniform(-1024,1024),
         z=random.uniform(-1024,1024),
         y=random.uniform(0,1024),
-        collider='box',
+        collider='sphere',
         scale_x=scale_x_value,
         scale_y=scale_x_value,
         scale_z=scale_x_value,
-        color=color.red
+        color=color.red,
         )
+    e = scene.entities[-1]
+    if hasattr(e, 'collider') and e.collider:
+        e.collider.visible = True
 
 # Créer un second DisplayRegion (vue droite)
 dr1 = base.win.make_display_region(0, 0.5, 0, 1)
@@ -98,17 +103,17 @@ p_text = Text(
 
 crosshair_p1 = Text(
     text='||',
-    position=(-0.445, 0.12),  # (x, y) de -1 à 1, coin haut gauche
+    position=(-0.445, 0.10),  # (x, y) de -1 à 1, coin haut gauche
     origin=(0,0),
-    scale=1,
+    scale=1.5,
     color=color.white,
     font ='VeraMono.ttf',
 )
 crosshair_p2 = Text(
     text='||',
-    position=(0.445, 0.13),  # (x, y) de -1 à 1, coin haut gauche
+    position=(0.445, 0.10),  # (x, y) de -1 à 1, coin haut gauche
     origin=(0,0),
-    scale=1,
+    scale=1.5,
     color=color.white,
     font ='VeraMono.ttf',
 )
@@ -195,9 +200,19 @@ def update():
         )
     #print(f"{len(scene.children)} entités dans la scène")
 
+    # Détection collision player <-> sphères
+    for e in scene.entities:
+        if e is player or not hasattr(e, 'collider') or not e.collider:
+            continue
+        if player.intersects(e).hit:
+            print(f"Collision avec une sphère à la position {e.position}")
+            player.position = Vec3(0, 5, 0)  # Réinitialise la position du joueur²
+            # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
+
 class Lazer(Entity):
     def __init__(self, direction=Vec3(0,0,-1), position=Vec3(0,0,0), color=color.red, rotation=Vec3(0,0,0)):
         position = Vec3(position)
+        position.z += 2
         super().__init__(
             parent=lazer,
             model='cube',
