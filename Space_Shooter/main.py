@@ -146,6 +146,17 @@ def update():
         speed -= 1
         if speed < 10:
             speed = 10
+    if held_keys['g']:
+        #vue de derrière
+        cam1.set_pos(0, 2.2, 20)
+    else:
+        #vue de devant
+        cam1.set_pos(0, 2.2, -20 - 20 *(speed/500))
+    if held_keys['l']:
+        #vue de derrière
+        cam2.set_pos(0, 2.2, 20)
+    else:
+        cam2.set_pos(0, 2.2, -20 - 20 *(player2.speed/500))
 
     if held_keys['up arrow']:
         player2.rotate(Vec3(rotation_speed, 0, 0), relative_to=player2)
@@ -175,8 +186,8 @@ def update():
 
     # ----- Gun orienté comme la caméra -----
     #gun.rotation = camera_pivot.rotation
-    cam1.set_pos(0, 2.2, -20 - 20 *(speed/500))
-    cam2.set_pos(0, 2.2, -20 - 20 *(player2.speed/500))
+    #cam1.set_pos(0, 2.2, -20 - 20 *(speed/500))
+    #cam2.set_pos(0, 2.2, -20 - 20 *(player2.speed/500))
 
     v_text.text = f'speed : {speed}'
     p_text.text = f'position : ({round(player.x, 2)}, {round(player.y, 2)}, {round(player.z, 2)})'
@@ -187,7 +198,8 @@ def update():
             direction=player.gun.forward,
             position=player.gun.world_position,
             color=color.red,
-            rotation=player.gun.world_rotation  # <-- passe la rotation du gun
+            rotation=player.gun.world_rotation,  # <-- passe la rotation du gun
+            gun=player.gun
         )
 
     if held_keys['k']:
@@ -196,38 +208,49 @@ def update():
             direction=player2.gun.forward,
             position=player2.gun.world_position,
             color=color.red,
-            rotation=player2.gun.world_rotation  # <-- passe la rotation du gun
+            rotation=player2.gun.world_rotation,  # <-- passe la rotation du gun
+            gun=player2.gun
         )
     #print(f"{len(scene.children)} entités dans la scène")
 
     # Détection collision player <-> sphères
     for e in scene.entities:
-        if e is player or not hasattr(e, 'collider') or not e.collider:
-            continue
         if player.intersects(e).hit:
             print(f"Collision avec une sphère à la position {e.position}")
             player.position = Vec3(0, 5, 0)  # Réinitialise la position du joueur²
             # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
+        if player2.intersects(e).hit:
+            print(f"Collision avec une sphère à la position {e.position}")
+            player2.position = Vec3(0, 5, 0)  # Réinitialise la position du joueur²
+            # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
 
 class Lazer(Entity):
-    def __init__(self, direction=Vec3(0,0,-1), position=Vec3(0,0,0), color=color.red, rotation=Vec3(0,0,0)):
-        position = Vec3(position)
-        position.z += 2
+    def __init__(self, direction=Vec3(0,0,-1), position=Vec3(0,0,0), color=color.red, rotation=Vec3(0,0,0), gun=None):
+        # On passe le gun parent pour suivre sa position/rotation
         super().__init__(
             parent=lazer,
             model='cube',
-            scale_y=.1,
-            scale_x=.1,
+            scale_y=.3,
+            scale_x=.3,
+            scale_z=5,
             color=color,
             collider='box',
-            direction=direction,
-            position=position,
-            rotation=rotation  # <-- applique la rotation du gun
         )
+        self.gun = gun
+        self.offset = Vec3(0, 0, 2)  # décalage devant le gun
+
+        # Positionne initialement devant le gun
+        if self.gun:
+            self.position = self.gun.world_position + self.gun.forward * 4
+            self.rotation = self.gun.world_rotation
+        else:
+            self.position = Vec3(position)
+            self.rotation = rotation
+        self.collider.visible = True
 
     def update(self):
-        # Utilise la direction locale du lazer (toujours -z dans son espace local)
-        self.position += self.forward * 1000 * time.dt
+        # Avance dans la direction du gun
+        self.position += self.forward * 150 * time.dt
         if self.x < -1000 or self.x > 1000 or self.y < -1000 or self.y > 1000 or self.z < -1000 or self.z > 1000:
             destroy(self)
 
