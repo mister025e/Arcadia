@@ -1,6 +1,7 @@
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from ursina.shaders import lit_with_shadows_shader
+from ursina import raycast
 from panda3d.core import PerspectiveLens, Camera, NodePath
 
 app = Ursina()
@@ -29,7 +30,7 @@ player2.speed = 20
 player2.visible_self = editor_camera.enabled
 player2_body = Entity(parent=player2, model='cube', texture = 'shore', position=(0,0,0), scale=(2,0.2,1), color=color.red)
 player2.update = Func(lambda: None)  # désactive le comportement FPS par défaut
-player2.collider = BoxCollider(player2, Vec3(0,0,0), Vec3(2,.5,2))
+player2.collider = BoxCollider(player2, Vec3(0,0,0), Vec3(2,5,2))
 player2.collider.visible = True
 player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
 
@@ -194,23 +195,66 @@ def update():
 
     # ----- Tir -----
     if held_keys['f']:
+        corrected_dir = player.gun.forward.normalized()
+
+        # Position actuelle et vitesse estimée de l'adversaire
+        enemy_pos = player2.world_position
+        enemy_velocity = player2.gun.forward.normalized() * player2.speed
+
+        # Estimation du temps que le lazer mettrait à atteindre la cible actuelle
+        distance_to_enemy = distance(player.gun.world_position, enemy_pos)
+        laser_speed = 150  # même valeur que dans ta classe Lazer
+        estimated_time = distance_to_enemy / laser_speed
+
+        # Position prédite
+        predicted_pos = enemy_pos + enemy_velocity * estimated_time
+
+        # Direction corrigée vers la position prédite
+        to_enemy = (predicted_pos - player.gun.world_position).normalized()
+
+        # Appliquer un aimbot léger si l’adversaire est proche du centre de visée
+        dot_product = corrected_dir.dot(to_enemy)
+        if dot_product > 0.94:  # tolérance ~20 degrés
+            corrected_dir = lerp(corrected_dir, to_enemy, 0.6).normalized()
+
+
+        dummy = Entity()
+        dummy.look_at(player.gun.world_position + corrected_dir)
+        aim_rotation = dummy.rotation
+        destroy(dummy)
+
+        #Entity(model='sphere', color=color.lime, position=predicted_pos, scale=0.3, lifetime=0.5)
+
         lazer_entity = Lazer(
-            direction=player.gun.forward,
+            direction=corrected_dir,
             position=player.gun.world_position,
             color=color.red,
-            rotation=player.gun.world_rotation,  # <-- passe la rotation du gun
+            rotation=aim_rotation,
             gun=player.gun
         )
 
+
     if held_keys['k']:
-        print('shoot')
+        corrected_dir = player2.gun.forward.normalized()
+        to_enemy = (player.world_position - player2.gun.world_position).normalized()
+        dot_product = corrected_dir.dot(to_enemy)
+
+        if dot_product > 0.95:
+            corrected_dir = lerp(corrected_dir, to_enemy, 0.5).normalized()
+
+        dummy = Entity()
+        dummy.look_at(player2.gun.world_position + corrected_dir)
+        aim_rotation = dummy.rotation
+        destroy(dummy)
+
         lazer_entity = Lazer(
-            direction=player2.gun.forward,
+            direction=corrected_dir,
             position=player2.gun.world_position,
             color=color.red,
-            rotation=player2.gun.world_rotation,  # <-- passe la rotation du gun
+            rotation=aim_rotation,
             gun=player2.gun
         )
+
     #print(f"{len(scene.children)} entités dans la scène")
 
     # Détection collision player <-> sphères
@@ -234,10 +278,11 @@ class Lazer(Entity):
             scale_x=.3,
             scale_z=5,
             color=color,
-            collider='box',
         )
+        self.collider = BoxCollider(self, Vec3(0,0,5), Vec3(2,2,10))
         self.gun = gun
         self.offset = Vec3(0, 0, 2)  # décalage devant le gun
+        self.direction = direction.normalized()
 
         # Positionne initialement devant le gun
         if self.gun:
@@ -249,10 +294,31 @@ class Lazer(Entity):
         self.collider.visible = True
 
     def update(self):
+        """if not self.enabled or not self.has_parent():
+            return  # Ne fait rien si l'entité a été détruite
+        if not hasattr(self, 'direction'):
+            return"""
         # Avance dans la direction du gun
-        self.position += self.forward * 150 * time.dt
+        prev_pos = self.world_position
+        self.position += self.direction * 500 * time.dt
+        #print(self.forward , 150 , time.dt)
         if self.x < -1000 or self.x > 1000 or self.y < -1000 or self.y > 1000 or self.z < -1000 or self.z > 1000:
             destroy(self)
+            return  # <-- Ajoute ce return pour éviter la suite du code si détruit
+
+        # Raycast entre ancienne et nouvelle position
+        hit = raycast(
+            origin=prev_pos,
+            direction=self.direction,
+            distance=(self.position - prev_pos).length(),
+            ignore=(self.gun,),
+            debug=False
+        )
+
+        if hit.hit and hit.entity in (player, player2):  # selon qui tire
+            print(f"Touché : {hit.entity}")
+            destroy(self)
+            return  # <-- Ajoute ce return aussi
 
 def pause_input(key):
     if key == 'tab':    # press tab to toggle edit/play mode
