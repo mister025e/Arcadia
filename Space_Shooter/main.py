@@ -30,7 +30,7 @@ player2.speed = 20
 player2.visible_self = editor_camera.enabled
 player2_body = Entity(parent=player2, model='cube', texture = 'shore', position=(0,0,0), scale=(2,0.2,1), color=color.red)
 player2.update = Func(lambda: None)  # désactive le comportement FPS par défaut
-player2.collider = BoxCollider(player2, Vec3(0,0,0), Vec3(2,.5,2))
+player2.collider = BoxCollider(player2, Vec3(0,0,0), Vec3(2,5,2))
 player2.collider.visible = True
 player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
 
@@ -260,8 +260,8 @@ class Lazer(Entity):
             scale_x=.3,
             scale_z=5,
             color=color,
-            collider='box',
         )
+        self.collider = BoxCollider(self, Vec3(0,0,1), Vec3(2,2,2.5))
         self.gun = gun
         self.offset = Vec3(0, 0, 2)  # décalage devant le gun
         self.direction = direction.normalized()
@@ -283,6 +283,7 @@ class Lazer(Entity):
         # Avance dans la direction du gun
         prev_pos = self.world_position
         self.position += self.forward * 150 * time.dt
+        print(self.forward , 150 , time.dt)
         if self.x < -1000 or self.x > 1000 or self.y < -1000 or self.y > 1000 or self.z < -1000 or self.z > 1000:
             destroy(self)
             return  # <-- Ajoute ce return pour éviter la suite du code si détruit
