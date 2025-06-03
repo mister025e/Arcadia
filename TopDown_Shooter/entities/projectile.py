@@ -28,27 +28,32 @@ class Projectile(Entity):
         """
         Move each frame; check for collisions. If it hits a player (not the owner), deal damage.
         If that lowers the player’s HP ≤ 0, call end_game_callback(owner).
-        Catch Panda3D empty‐node errors if destroy(self) was already called.
+        We set self.enabled = False before destroy(self) so that GameManager removes this projectile next frame.
         """
         if game_state != 'playing':
             return
 
-        # Wrap position update in try/except to avoid empty‐node assertion
+        # If somehow already disabled, bail
+        if not self.enabled:
+            return
+
+        # 1) Move forward (wrap in try/except to avoid leftover‐node assertions)
         try:
             self.position += self.direction * self.speed * time.dt
         except AssertionError:
-            # This entity has been destroyed or its node is empty; bail out
+            # Node is already empty/destroyed; bail
             return
 
-        # If out of bounds, destroy and return
+        # 2) Out‐of‐bounds? disable + destroy, then return
         try:
             if abs(self.position.x) > 20 or abs(self.position.z) > 20:
+                self.enabled = False
                 destroy(self)
                 return
         except AssertionError:
             return
 
-        # Now check collisions, again catching empty‐node errors
+        # 3) Check for collisions (wrap in try/except)
         try:
             hit = self.intersects()
         except AssertionError:
@@ -63,12 +68,14 @@ class Projectile(Entity):
             # If it hits a Player (and not the one who fired)
             if isinstance(ent, Player) and ent is not self.owner:
                 ent.health -= 20
+                self.enabled = False
                 destroy(self)
                 if ent.health <= 0:
                     end_game_callback(self.owner)
                 return
 
-            # If it hits a wall or cover (tagged 'wall'), destroy it
+            # If it hits a wall or cover (tagged 'wall'), disable + destroy
             if hasattr(ent, 'tag') and ent.tag == 'wall':
+                self.enabled = False
                 destroy(self)
                 return
