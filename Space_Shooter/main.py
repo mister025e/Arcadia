@@ -3,6 +3,18 @@ from ursina.prefabs.first_person_controller import FirstPersonController
 from ursina.shaders import lit_with_shadows_shader
 from ursina import raycast
 from panda3d.core import PerspectiveLens, Camera, NodePath
+from panda3d.core import Point3, Point2
+
+def project_to_screen(entity, cam_np, lens, region_offset=Vec2(0,0), region_scale=Vec2(1,1)):
+    target_pos = entity.get_pos(render) + Vec3(0, .5, 0)  # vise le haut du vaisseau
+    pos_3d = cam_np.get_relative_point(render, target_pos)
+
+    p2d = Point2()
+    if lens.project(pos_3d, p2d):
+        return Vec2(p2d.x * region_scale.x + region_offset.x,
+                    p2d.y * region_scale.y + region_offset.y)
+    return None
+
 
 app = Ursina()
 
@@ -101,9 +113,48 @@ crosshair_p2 = Text(
     font ='VeraMono.ttf',
 )
 
+# Cercle UI pour joueur 1 (focus sur player2)
+focus_circle_1 = Entity(
+    parent=camera.ui,
+    model='circle',
+    color=color.rgba(255, 255, 0, 128),  # jaune semi-transparent
+    scale=0.05,
+    z=-1,
+)
+
+focus_circle_2 = Entity(
+    parent=camera.ui,
+    model='circle',
+    color=color.rgba(255, 100, 255, 128),  # magenta semi-transparent
+    scale=0.05,
+    z=-1,
+)
+
 # Variables pour stocker la rotation
 pivot_rotation_x = 10
 speed = 20
+
+hud_left = Entity(parent=camera.ui)
+
+focus_circle_1 = Entity(
+    parent=hud_left,
+    model='quad',  # ou 'plane'
+    texture='models/cursor',  # <-- c'est ici qu'on met l'image
+    texture_scale=(0.1, 0.1),  # Ajuste la taille de l'image
+    color=color.rgba(255, 255, 0, 128),
+    scale=0.05,
+    z=-1,
+)
+
+hud_right = Entity(parent=camera.ui)
+
+focus_circle_2 = Entity(
+    parent=hud_right,
+    model='circle',
+    color=color.rgba(255, 255, 0, 128),
+    scale=0.05,
+    z=-1,
+)
 
 def update():
     global pivot_rotation_x, speed, crosshair_p1, crosshair_p2
@@ -173,6 +224,23 @@ def update():
     #cam2.set_pos(0, 2.2, -20 - 20 *(player2.speed/500))
     crosshair_p1.text = f'{speed}\n||'
     crosshair_p2.text = f'{player2.speed}\n||'
+
+    screen_pos = project_to_screen(player2, cam1, lens1, region_offset=Vec2(-0.5, 0), region_scale=Vec2(0.5, 1))
+    #print(f"Screen position player2: {screen_pos}")
+    if screen_pos:
+        focus_circle_1.position = Vec3(screen_pos.x * 0.89, screen_pos.y * 0.5, 0)
+        focus_circle_1.visible = True
+    else:
+        focus_circle_1.visible = False
+
+    screen_pos2 = project_to_screen(player, cam2, lens2, region_offset=Vec2(0.5, 0), region_scale=Vec2(0.5, 1))
+    #print(f"Screen position player: {screen_pos2}")
+    if screen_pos2:
+        focus_circle_2.position = Vec3(screen_pos2.x * 0.89, screen_pos2.y * 0.5, 0)
+        focus_circle_2.visible = True
+    else:
+        focus_circle_2.visible = False
+
 
     # ----- Tir -----
     if held_keys['f']:
@@ -255,8 +323,8 @@ class Lazer(Entity):
         super().__init__(
             parent=lazer,
             model='cube',
-            scale_y=.3,
-            scale_x=.3,
+            scale_y=1,
+            scale_x=1,
             scale_z=5,
             color=color,
         )
@@ -282,7 +350,7 @@ class Lazer(Entity):
             return"""
         # Avance dans la direction du gun
         prev_pos = self.world_position
-        self.position += self.forward * 500 * time.dt
+        self.position += self.forward * 1000 * time.dt
         #print(self.forward , 150 , time.dt)
         if self.x < -1000 or self.x > 1000 or self.y < -1000 or self.y > 1000 or self.z < -1000 or self.z > 1000:
             destroy(self)
@@ -303,6 +371,7 @@ class Lazer(Entity):
             destroy(self)
             return  # <-- Ajoute ce return aussi
 
+
 def pause_input(key):
     if key == 'tab':    # press tab to toggle edit/play mode
         editor_camera.enabled = not editor_camera.enabled
@@ -317,12 +386,18 @@ pause_handler = Entity(ignore_paused=True, input=pause_input)
 
 sun = DirectionalLight()
 sun.look_at(Vec3(1,-1,-1))
+sun.color = color.white
+sun.intensity = 2
+
+ambient = AmbientLight()
+ambient.color = color.rgba(255, 255, 255, 64)
+
 Sky(texture='models/ciel_etoile2')
 
 base.win.remove_display_region(base.camNode.get_display_region(0))
 player.cursor.enabled = False
 
-player.highlight_color = color.yellow
-player2.highlight_color = color.orange
+sun.color = color.white  # lumière blanche pure
+sun.intensity = 10       # valeur >1 pour plus de lumière (par défaut 1)
 
 app.run()
