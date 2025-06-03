@@ -9,8 +9,8 @@ app = Ursina()
 random.seed(0)
 Entity.default_shader = lit_with_shadows_shader
 
-ground = Entity(model='plane', collider='box', scale=2048, texture='grass', texture_scale=(4,4))
-ground.collider.visible = True
+ground = Entity(model='plane', collider='box', scale=2048, texture='models/sol_lune', texture_scale=(4,4))
+#ground.collider.visible = True
 
 editor_camera = EditorCamera(enabled=False, ignore_paused=True)
 player = FirstPersonController(model='cube', color=color.blue, collider='box')
@@ -21,7 +21,7 @@ player_body = Entity(parent=player, model='cube', texture='shore', position=(0,0
 player.speed = 20
 player.update = Func(lambda: None)  # désactive le comportement FPS par défaut
 player.collider = BoxCollider(player, Vec3(0,0,0), Vec3(2,.5,2))
-player.collider.visible = True
+#player.collider.visible = True
 player.gun = Entity(model='scale_gizmo', parent=player, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
 
 # Joueur 2 (rouge)
@@ -31,7 +31,7 @@ player2.visible_self = editor_camera.enabled
 player2_body = Entity(parent=player2, model='cube', texture = 'shore', position=(0,0,0), scale=(2,0.2,1), color=color.red)
 player2.update = Func(lambda: None)  # désactive le comportement FPS par défaut
 player2.collider = BoxCollider(player2, Vec3(0,0,0), Vec3(2,5,2))
-player2.collider.visible = True
+#player2.collider.visible = True
 player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
 
 lazer = Entity()
@@ -41,7 +41,7 @@ lazer = Entity()
 
 for i in range(512):
     scale_x_value = random.uniform(2,30)
-    Entity(model='sphere', origin_y=-.5, scale=2, texture='perlin_noise', texture_scale=(2,2),
+    Entity(model='sphere', origin_y=-.5, scale=2, texture='models/lune', texture_scale=(2,2),
         x=random.uniform(-1024,1024),
         z=random.uniform(-1024,1024),
         y=random.uniform(0,1024),
@@ -49,11 +49,11 @@ for i in range(512):
         scale_x=scale_x_value,
         scale_y=scale_x_value,
         scale_z=scale_x_value,
-        color=color.red,
+        color=color.white if random.random() < 0.5 else color.gray,
         )
-    e = scene.entities[-1]
-    if hasattr(e, 'collider') and e.collider:
-        e.collider.visible = True
+    #e = scene.entities[-1]
+    #if hasattr(e, 'collider') and e.collider:
+        #e.collider.visible = True
 
 # Créer un second DisplayRegion (vue droite)
 dr1 = base.win.make_display_region(0, 0.5, 0, 1)
@@ -84,30 +84,12 @@ cam2.reparent_to(player2)
 cam2.node().get_lens().set_fov(40)  # champ de vision
 cam2.set_pos(0, 2.2, -20)
 
-v_text = Text(
-    text='speed : 0',
-    position=(0, 0.45),  # (x, y) de -1 à 1, coin haut gauche
-    origin=(0,0),
-    scale=2,
-    color=color.white,
-    font ='VeraMono.ttf',
-)
-
-p_text = Text(
-    text='position : (0, 0, 0)',
-    position=(0, 0.4),  # (x, y) de -1 à 1, coin haut gauche
-    origin=(0,0),
-    scale=1,
-    color=color.white,
-    font ='VeraMono.ttf',
-)
-
 crosshair_p1 = Text(
     text='||',
     position=(-0.445, 0.10),  # (x, y) de -1 à 1, coin haut gauche
     origin=(0,0),
     scale=1.5,
-    color=color.white,
+    color=color.rgba(1, 0, 0, 0.6),  # Couleur orange
     font ='VeraMono.ttf',
 )
 crosshair_p2 = Text(
@@ -115,7 +97,7 @@ crosshair_p2 = Text(
     position=(0.445, 0.10),  # (x, y) de -1 à 1, coin haut gauche
     origin=(0,0),
     scale=1.5,
-    color=color.white,
+    color=color.rgba(1, 0, 0, 0.6),  # Couleur orange
     font ='VeraMono.ttf',
 )
 
@@ -124,7 +106,7 @@ pivot_rotation_x = 10
 speed = 20
 
 def update():
-    global pivot_rotation_x, speed, v_text, p_text, crosshair_p1, crosshair_p2
+    global pivot_rotation_x, speed, crosshair_p1, crosshair_p2
     cam1.look_at(player)
     cam2.look_at(player2)
 
@@ -189,9 +171,8 @@ def update():
     #gun.rotation = camera_pivot.rotation
     #cam1.set_pos(0, 2.2, -20 - 20 *(speed/500))
     #cam2.set_pos(0, 2.2, -20 - 20 *(player2.speed/500))
-
-    v_text.text = f'speed : {speed}'
-    p_text.text = f'position : ({round(player.x, 2)}, {round(player.y, 2)}, {round(player.z, 2)})'
+    crosshair_p1.text = f'{speed}\n||'
+    crosshair_p2.text = f'{player2.speed}\n||'
 
     # ----- Tir -----
     if held_keys['f']:
@@ -291,7 +272,8 @@ class Lazer(Entity):
         else:
             self.position = Vec3(position)
             self.rotation = rotation
-        self.collider.visible = True
+        #self.collider.visible = True
+        self.look_at(self.position + self.direction)
 
     def update(self):
         """if not self.enabled or not self.has_parent():
@@ -300,7 +282,7 @@ class Lazer(Entity):
             return"""
         # Avance dans la direction du gun
         prev_pos = self.world_position
-        self.position += self.direction * 500 * time.dt
+        self.position += self.forward * 500 * time.dt
         #print(self.forward , 150 , time.dt)
         if self.x < -1000 or self.x > 1000 or self.y < -1000 or self.y > 1000 or self.z < -1000 or self.z > 1000:
             destroy(self)
@@ -316,7 +298,8 @@ class Lazer(Entity):
         )
 
         if hit.hit and hit.entity in (player, player2):  # selon qui tire
-            print(f"Touché : {hit.entity}")
+            print(f"Touché : {hit.entities} à la position {hit.world_point}")
+            hit.entity.position = Vec3(0, 5, 0)  # Réinitialise la position du joueur touché
             destroy(self)
             return  # <-- Ajoute ce return aussi
 
@@ -334,9 +317,12 @@ pause_handler = Entity(ignore_paused=True, input=pause_input)
 
 sun = DirectionalLight()
 sun.look_at(Vec3(1,-1,-1))
-Sky(texture='sky_sunset')
+Sky(texture='models/ciel_etoile2')
 
 base.win.remove_display_region(base.camNode.get_display_region(0))
 player.cursor.enabled = False
+
+player.highlight_color = color.yellow
+player2.highlight_color = color.orange
 
 app.run()
