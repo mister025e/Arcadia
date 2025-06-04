@@ -26,7 +26,7 @@ class GameOverScreen:
             color=color.white,
             enabled=False
         )
-        # Restart button
+        # Restart button (row 0, col 0)
         self.btn_restart = Button(
             parent=ui_parent,
             text='Restart',
@@ -36,7 +36,7 @@ class GameOverScreen:
             on_click=on_restart,
             enabled=False
         )
-        # Main Menu button
+        # Main Menu button (row 0, col 1)
         self.btn_main_menu = Button(
             parent=ui_parent,
             text='Main Menu',
@@ -46,7 +46,7 @@ class GameOverScreen:
             on_click=on_main_menu,
             enabled=False
         )
-        # Save Score button
+        # Save Score button (row 1, col 0)
         self.btn_save_score = Button(
             parent=ui_parent,
             text='Save Score',
@@ -56,7 +56,7 @@ class GameOverScreen:
             on_click=on_save,
             enabled=False
         )
-        # View Leaderboard button
+        # View Leaderboard button (row 1, col 1)
         self.btn_view_leaderboard = Button(
             parent=ui_parent,
             text='View Leaderboard',
@@ -67,6 +67,14 @@ class GameOverScreen:
             enabled=False
         )
 
+        # For keyboard navigation: row-major order
+        self.buttons = [
+            self.btn_restart,         # index 0 (row=0,col=0)
+            self.btn_main_menu,       # index 1 (row=0,col=1)
+            self.btn_save_score,      # index 2 (row=1,col=0)
+            self.btn_view_leaderboard # index 3 (row=1,col=1)
+        ]
+
     def show(self, winner_name, score, score_saved):
         """
         Show the panel, set the winner/score text.
@@ -75,16 +83,14 @@ class GameOverScreen:
         self.gameover_winner_text.text = f'{winner_name} Wins!\nScore: {score}'
         self.gameover_panel.enabled = True
         self.gameover_winner_text.enabled = True
-        self.btn_restart.enabled = True
-        self.btn_main_menu.enabled = True
-        # If the score already saved this match, hide the button
-        self.btn_save_score.enabled = not score_saved
-        self.btn_view_leaderboard.enabled = True
+
+        # Enable buttons, except disable “Save Score” if already saved
+        for btn in self.buttons:
+            btn.enabled = True
+        self.btn_save_score.enabled = (not score_saved)
 
     def hide(self):
         self.gameover_panel.enabled = False
         self.gameover_winner_text.enabled = False
-        self.btn_restart.enabled = False
-        self.btn_main_menu.enabled = False
-        self.btn_save_score.enabled = False
-        self.btn_view_leaderboard.enabled = False
+        for btn in self.buttons:
+            btn.enabled = False

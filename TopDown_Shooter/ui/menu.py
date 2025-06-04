@@ -20,7 +20,7 @@ class MainMenu:
             enabled=False
         )
 
-        # Title text (optional)
+        # Title text
         self.title = Text(
             parent=ui_parent,
             text='Top-Down Shooter',
@@ -47,7 +47,7 @@ class MainMenu:
             text='Instructions',
             scale=(0.25, 0.1),
             position=(0, 0.0, 0),
-            color=color.magenta,
+            color=color.yellow,
             on_click=on_instructions,
             enabled=False
         )
@@ -74,18 +74,22 @@ class MainMenu:
             enabled=False
         )
 
+        # Ordered list for keyboard navigation (top to bottom)
+        self.buttons = [
+            self.btn_play,
+            self.btn_instructions,
+            self.btn_leaderboard,
+            self.btn_quit
+        ]
+
     def show(self):
         self.menu_panel.enabled = True
         self.title.enabled = True
-        self.btn_play.enabled = True
-        self.btn_instructions.enabled = True
-        self.btn_leaderboard.enabled = True
-        self.btn_quit.enabled = True
+        for btn in self.buttons:
+            btn.enabled = True
 
     def hide(self):
         self.menu_panel.enabled = False
         self.title.enabled = False
-        self.btn_play.enabled = False
-        self.btn_instructions.enabled = False
-        self.btn_leaderboard.enabled = False
-        self.btn_quit.enabled = False
+        for btn in self.buttons:
+            btn.enabled = False

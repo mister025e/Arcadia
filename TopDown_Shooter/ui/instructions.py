@@ -28,12 +28,12 @@ class InstructionsScreen:
             enabled=False
         )
 
-        # Actual instructions (example text—customize as desired)
+        # Body instructions
         self.body_text = Text(
             parent=ui_parent,
             text=(
                 "Player 1 (Blue):\n"
-                "  Move: WASD\n"
+                "  Move: W/A/S/D\n"
                 "  Shoot: Space\n\n"
                 "Player 2 (Orange):\n"
                 "  Move: Arrow Keys\n"
@@ -61,6 +61,8 @@ class InstructionsScreen:
             on_click=on_back,
             enabled=False
         )
+
+        self.buttons = [self.btn_back]
 
     def show(self):
         self.instructions_panel.enabled = True
