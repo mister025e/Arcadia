@@ -21,7 +21,56 @@ app = Ursina()
 random.seed(0)
 Entity.default_shader = lit_with_shadows_shader
 
-ground = Entity(model='plane', collider='box', scale=2048, texture='models/sol_lune', texture_scale=(4,4))
+ground = Entity(model='plane', collider='box', scale=2048, texture='models/quadrillage', texture_scale=(4,4), color=color.rgba(255, 255, 255, 120))
+wall = Entity(
+    model='quad',
+    collider='box',
+    scale=(2048, 2048, 1),
+    texture='models/quadrillage',
+    texture_scale=(4,4),
+    position=(0, 1024, 1024),
+    color=color.rgba(255, 255, 255, 120)  # transparence ajoutée
+)
+wall2 = Entity(
+    model='quad',
+    collider='box',
+    scale=(2048, 2048, 1),
+    texture='models/quadrillage',
+    texture_scale=(4,4),
+    position=(0, 1024, -1024),
+    rotation_y=180,
+    color=color.rgba(255, 255, 255, 120)
+)
+wall3 = Entity(
+    model='quad',
+    collider='box',
+    scale=(2048, 2048, 1),
+    texture='models/quadrillage',
+    texture_scale=(4,4),
+    position=(1024, 1024, 0),
+    rotation_y=90,
+    color=color.rgba(255, 255, 255, 120)
+)
+wall4 = Entity(
+    model='quad',
+    collider='box',
+    scale=(2048, 2048, 1),
+    texture='models/quadrillage',
+    texture_scale=(4,4),
+    position=(-1024, 1024, 0),
+    rotation_y=-90,
+    color=color.rgba(255, 255, 255, 120)
+)
+wall5 = Entity(
+    model='quad',
+    collider='box',
+    scale=(2048, 2048, 1),
+    texture='models/quadrillage',
+    texture_scale=(4,4),
+    position=(0, 2048, 0),
+    rotation_x=-90,
+    color=color.rgba(255, 255, 255, 120)
+)
 #ground.collider.visible = True
 
 editor_camera = EditorCamera(enabled=False, ignore_paused=True)
@@ -53,10 +102,10 @@ lazer = Entity()
 
 for i in range(512):
     scale_x_value = random.uniform(2,30)
-    Entity(model='sphere', origin_y=-.5, scale=2, texture='models/lune', texture_scale=(2,2),
+    Entity(model='sphere', origin_y=-.5, scale=2, texture='models/sol_lune', texture_scale=(2,2),
         x=random.uniform(-1024,1024),
         z=random.uniform(-1024,1024),
-        y=random.uniform(0,1024),
+        y=random.uniform(0,2048),
         collider='sphere',
         scale_x=scale_x_value,
         scale_y=scale_x_value,
@@ -113,23 +162,6 @@ crosshair_p2 = Text(
     font ='VeraMono.ttf',
 )
 
-# Cercle UI pour joueur 1 (focus sur player2)
-focus_circle_1 = Entity(
-    parent=camera.ui,
-    model='circle',
-    color=color.rgba(255, 255, 0, 128),  # jaune semi-transparent
-    scale=0.05,
-    z=-1,
-)
-
-focus_circle_2 = Entity(
-    parent=camera.ui,
-    model='circle',
-    color=color.rgba(255, 100, 255, 128),  # magenta semi-transparent
-    scale=0.05,
-    z=-1,
-)
-
 # Variables pour stocker la rotation
 pivot_rotation_x = 10
 speed = 20
@@ -139,21 +171,21 @@ hud_left = Entity(parent=camera.ui)
 focus_circle_1 = Entity(
     parent=hud_left,
     model='quad',  # ou 'plane'
+    #agrendir le model pour qu'il soit plus grand
+    model_scale=Vec3(5, 5, 5),
     texture='models/cursor',  # <-- c'est ici qu'on met l'image
-    texture_scale=(0.1, 0.1),  # Ajuste la taille de l'image
-    color=color.rgba(255, 255, 0, 128),
-    scale=0.05,
-    z=-1,
+    color=color.rgba(255, 255, 0, 200),
 )
 
 hud_right = Entity(parent=camera.ui)
 
 focus_circle_2 = Entity(
     parent=hud_right,
-    model='circle',
-    color=color.rgba(255, 255, 0, 128),
-    scale=0.05,
-    z=-1,
+    model='quad',
+    #agrendir le model pour qu'il soit plus grand
+    model_scale=Vec3(5, 5, 5),
+    texture='models/cursor',  # <-- c'est ici qu'on met l'image
+    color=color.rgba(255, 255, 0, 200),
 )
 
 def update():
@@ -173,11 +205,11 @@ def update():
     if held_keys['a']:
         player.rotate(Vec3(0, 0, -rotation_speed*3), relative_to=player)
     if held_keys['t']:
-        speed += 1 
+        speed += 2 
         if speed > 300:
             speed = 300
     if held_keys['y']:
-        speed -= 1
+        speed -= 2
         if speed < 10:
             speed = 10
     if held_keys['g']:
@@ -201,11 +233,11 @@ def update():
     if held_keys['left arrow']:
         player2.rotate(Vec3(0, 0, -rotation_speed*3), relative_to=player2)
     if held_keys['o']:
-        player2.speed += 1 
+        player2.speed += 2 
         if player2.speed > 300:
             player2.speed = 300
     if held_keys['p']:
-        player2.speed -= 1
+        player2.speed -= 2
         if player2.speed < 10:
             player2.speed = 10
     # ----- Déplacement dans la direction du gun -----
@@ -230,6 +262,11 @@ def update():
     if screen_pos:
         focus_circle_1.position = Vec3(screen_pos.x * 0.89, screen_pos.y * 0.5, 0)
         focus_circle_1.visible = True
+        #ajuster la taille du cercle en fonction de la distance
+        distance_to_player2 = distance(player.world_position, player2.world_position)
+        focus_circle_1.scale = Vec3(min(max(5 - distance_to_player2, 0.08), 0.5), min(max(5 - distance_to_player2, 0.08), 0.5), 1)
+        focus_circle_1.rotation_z += 2
+        #print(f"Distance to player2: {distance_to_player2}, Circle scale: {focus_circle_1.scale}")
     else:
         focus_circle_1.visible = False
 
@@ -238,6 +275,10 @@ def update():
     if screen_pos2:
         focus_circle_2.position = Vec3(screen_pos2.x * 0.89, screen_pos2.y * 0.5, 0)
         focus_circle_2.visible = True
+        #ajuster la taille du cercle en fonction de la distance
+        distance_to_player = distance(player2.world_position, player.world_position)
+        focus_circle_2.scale = Vec3(min(max(5 - distance_to_player, 0.08), 0.5), min(max(5 - distance_to_player, 0.08), 0.5), 1)
+        focus_circle_2.rotation_z += 2
     else:
         focus_circle_2.visible = False
 
@@ -352,7 +393,7 @@ class Lazer(Entity):
         prev_pos = self.world_position
         self.position += self.forward * 1000 * time.dt
         #print(self.forward , 150 , time.dt)
-        if self.x < -1000 or self.x > 1000 or self.y < -1000 or self.y > 1000 or self.z < -1000 or self.z > 1000:
+        if self.x < -1024 or self.x > 1024 or self.y < 0 or self.y > 2048 or self.z < -1024 or self.z > 1024:
             destroy(self)
             return  # <-- Ajoute ce return pour éviter la suite du code si détruit
 
