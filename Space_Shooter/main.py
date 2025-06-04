@@ -102,7 +102,7 @@ lazer = Entity()
 
 for i in range(512):
     scale_x_value = random.uniform(2,30)
-    Entity(model='sphere', origin_y=-.5, scale=2, texture='models/lune', texture_scale=(2,2),
+    Entity(model='sphere', origin_y=-.5, scale=2, texture='models/sol_lune', texture_scale=(2,2),
         x=random.uniform(-1024,1024),
         z=random.uniform(-1024,1024),
         y=random.uniform(0,2048),
