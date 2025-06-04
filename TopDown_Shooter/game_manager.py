@@ -7,6 +7,7 @@ from ui.menu import MainMenu
 from ui.gameover import GameOverScreen
 from ui.name_entry import NameEntryScreen
 from ui.leaderboard import LeaderboardScreen
+from ui.instructions import InstructionsScreen
 from utils.file_manager import load_leaderboard, add_score_to_leaderboard
 
 import os
@@ -21,7 +22,7 @@ class GameManager:
         # Keep reference to the Ursina app
         self.app = app
 
-        # Game state can be: 'menu', 'playing', 'gameover', 'name_entry', 'leaderboard'
+        # Game state can be: 'menu', 'playing', 'gameover', 'name_entry', 'leaderboard', 'instructions'
         self.game_state = 'menu'
         self.match_start_time = 0
         self.match_end_time = 0
@@ -64,6 +65,8 @@ class GameManager:
         self.main_menu = MainMenu(
             ui_parent=camera.ui,
             on_play=self.start_game,
+            on_instructions=self.show_instructions,
+            on_leaderboard=self.show_leaderboard_from_menu,
             on_quit=application.quit
         )
         self.gameover_screen = GameOverScreen(
@@ -81,6 +84,10 @@ class GameManager:
             ui_parent=camera.ui,
             on_back=self.back_to_gameover
         )
+        self.instructions_screen = InstructionsScreen(
+            ui_parent=camera.ui,
+            on_back=self.back_from_instructions
+        )
 
         # Attach HUD texts to camera.ui
         self.hud.attach_to_ui(camera.ui)
@@ -94,15 +101,8 @@ class GameManager:
         self._hide_all_entities_and_ui()
         self.show_main_menu()
 
-    def register_projectile(self, proj):
-        """
-        Called by Player._shoot() whenever a new Projectile is created.
-        We append it to our list so we can update it each frame.
-        """
-        self.projectiles.append(proj)
-
     def _hide_all_entities_and_ui(self):
-        # Disable every map entity + players
+        # Disable map entities and players
         for e in self.game_entities:
             e.enabled = False
 
@@ -114,6 +114,14 @@ class GameManager:
         self.gameover_screen.hide()
         self.name_entry.hide()
         self.leaderboard_screen.hide()
+        self.instructions_screen.hide()
+
+    def register_projectile(self, proj):
+        """
+        Called by Player._shoot() whenever a new Projectile is created.
+        We append it to our list so we can update it each frame.
+        """
+        self.projectiles.append(proj)
 
     def show_main_menu(self):
         """
@@ -137,12 +145,13 @@ class GameManager:
         self.gameover_screen.hide()
         self.name_entry.hide()
         self.leaderboard_screen.hide()
+        self.instructions_screen.hide()
 
         # Reset player health and positions
         self.p1.health = 100
         self.p2.health = 100
         self.p1.position = (-5, 0.5, -5)
-        self.p2.position = ( 5, 0.5,  5)
+        self.p2.position = (5, 0.5, 5)
 
         # Enable world entities and players
         for e in self.game_entities:
@@ -179,10 +188,10 @@ class GameManager:
 
     def show_name_entry(self):
         """
-        Transition to the name‐entry UI. Keep gameover text behind but hide its buttons.
+        Switch to the username‐entry UI. Disable other buttons so only name entry is possible.
         """
         self.game_state = 'name_entry'
-        self.gameover_screen.hide()  # hide all gameover elements
+        self.gameover_screen.hide()
         self.name_entry.show()
 
     def finish_name_entry(self, username):
@@ -206,26 +215,77 @@ class GameManager:
 
     def show_leaderboard(self):
         """
-        Hide gameover UI; display the top‐10 leaderboard list.
+        (Called from Game Over screen) Hide GameOver UI and display leaderboard.
+        Back → gameover.
         """
         self.game_state = 'leaderboard'
+        self.main_menu.hide()
         self.gameover_screen.hide()
-        # Reload the leaderboard data from file, in case it changed
+        self.name_entry.hide()
+        self.instructions_screen.hide()
+
+        # Reload data
         self.leaderboard_data = load_leaderboard()
+        # Ensure Back goes to game over
+        self.leaderboard_screen.btn_back.on_click = self.back_to_gameover
+        self.leaderboard_screen.show(self.leaderboard_data)
+
+    def show_leaderboard_from_menu(self):
+        """
+        (Called from Main Menu) Hide MainMenu and show leaderboard.
+        Back → main menu.
+        """
+        self.game_state = 'leaderboard'
+        self.main_menu.hide()
+        self.gameover_screen.hide()
+        self.name_entry.hide()
+        self.instructions_screen.hide()
+
+        # Reload data
+        self.leaderboard_data = load_leaderboard()
+        # Ensure Back goes to main menu
+        self.leaderboard_screen.btn_back.on_click = self.back_to_menu_from_leaderboard
         self.leaderboard_screen.show(self.leaderboard_data)
 
     def back_to_gameover(self):
         """
-        From the leaderboard screen, return to the gameover UI
-        (Save Score only if not yet saved).
+        From the leaderboard screen, return to the gameover screen.
         """
         self.game_state = 'gameover'
         self.leaderboard_screen.hide()
+        # Show gameover UI
         self.gameover_screen.show(
             self.gameover_screen.gameover_winner_text.text.split('\n')[0].replace(' Wins!', ''),
             self.last_score,
             self.score_saved
         )
+
+    def back_to_menu_from_leaderboard(self):
+        """
+        From the leaderboard screen (when launched from main menu), return to main menu.
+        """
+        self.game_state = 'menu'
+        self.leaderboard_screen.hide()
+        self.main_menu.show()
+
+    def show_instructions(self):
+        """
+        Hide main menu (or any other) and display the instructions screen.
+        """
+        self.game_state = 'instructions'
+        self.main_menu.hide()
+        self.gameover_screen.hide()
+        self.name_entry.hide()
+        self.leaderboard_screen.hide()
+        self.instructions_screen.show()
+
+    def back_from_instructions(self):
+        """
+        From the instructions screen, return to the main menu.
+        """
+        self.game_state = 'menu'
+        self.instructions_screen.hide()
+        self.main_menu.show()
 
     def update(self):
         """
@@ -236,7 +296,7 @@ class GameManager:
             elapsed = time.time() - self.match_start_time
             self.hud.update(elapsed, self.p1.health, self.p2.health)
 
-            # Update players via game_update
+            # Update players
             self.p1.game_update(self.game_state)
             self.p2.game_update(self.game_state)
 
@@ -255,13 +315,6 @@ class GameManager:
         """
         Called whenever a key is pressed or released.
         - If we’re in name‐entry, delegate to that screen.
-        - Otherwise, do nothing (players handle movement/shooting themselves).
         """
         if self.game_state == 'name_entry':
             self.name_entry.input(key)
-
-    def run(self):
-        """
-        Finally kick off Ursina’s main loop.
-        """
-        self.app.run()
