@@ -4,12 +4,10 @@ from ursina import Entity, Text, Button, color
 class LeaderboardScreen:
     """
     Full‐screen panel that shows up to 10 high‐score entries,
-    plus a Back button to return to the Game Over screen.
+    plus a Back button to return to the previous screen.
     """
 
     def __init__(self, ui_parent, on_back):
-        self.on_back = on_back
-
         self.leaderboard_panel = Entity(
             parent=ui_parent,
             model='quad',
@@ -42,6 +40,8 @@ class LeaderboardScreen:
             on_click=on_back,
             enabled=False
         )
+
+        self.buttons = [self.btn_back]
 
     def show(self, leaderboard_data):
         """
