@@ -46,7 +46,8 @@ class Projectile(Entity):
 
         # 2) Out‐of‐bounds? disable + destroy, then return
         try:
-            if abs(self.position.x) > 20 or abs(self.position.z) > 20:
+            # Out of bounds: Z beyond ±11.5 (north/south) or X beyond ±20 (east/west)
+            if abs(self.position.z) > 11.5 or abs(self.position.x) > 20:
                 self.enabled = False
                 destroy(self)
                 return

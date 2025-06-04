@@ -47,8 +47,8 @@ class Player(Entity):
             movement = movement.normalized() * self.speed * time.dt
             new_pos = self.position + movement
 
-            # Keep inside ±19.5 (borders at ±20.5)
-            if abs(new_pos.x) <= 19.5 and abs(new_pos.z) <= 19.5:
+            # Keep inside ±19.5 on X (east/west) and ±10.5 on Z (north/south at z=±11.5)
+            if abs(new_pos.x) <= 19.5 and abs(new_pos.z) <= 10.5:
                 self.position = new_pos
 
             # Rotate to face direction of movement
