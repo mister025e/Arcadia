@@ -52,7 +52,7 @@ def map_generation():
         rotation_x=-90,
         color=color.rgba(255, 255, 255, 120)
     )
-    #ground.collider.visible = True
+    ground.collider.visible = True
 
     for i in range(512):
         scale_x_value = random.uniform(2,30)

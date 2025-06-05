@@ -3,29 +3,44 @@ from ursina.prefabs.first_person_controller import FirstPersonController
 from entities.lazer import Lazer
 
 def players_creation(editor_camera):
-    player = FirstPersonController(model='cube', color=color.blue, collider='box')
+    player = FirstPersonController(model='cube', color=color.blue, collider='box', position=(0, 500, 0))
     player.visible_self = editor_camera.enabled
     player.name = 'player1'
-    # Ajoute le visuel voulu comme enfant
     player_body = Entity(parent=player, model='cube', texture='shore', position=(0,0,0), scale=(2,0.2,1), color=color.blue)
 
     player.speed = 20
     player.update = Func(lambda: None)  # désactive le comportement FPS par défaut
     player.collider = BoxCollider(player, Vec3(0,0,0), Vec3(2,.5,2))
-    #player.collider.visible = True
     player.gun = Entity(model='scale_gizmo', parent=player, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
 
+    player.position = (0, 500, 10)  # <-- Force la position après la désactivation du comportement
+
     # Joueur 2 (rouge)
-    player2 = Entity(model='cube', color=color.orange, position=(5, 2, 0))
+    player2 = Entity(model='cube', color=color.orange, position=(5, 20, 0))
     player2.speed = 20
     player2.visible_self = editor_camera.enabled
     player2.name = 'player2'
     player2_body = Entity(parent=player2, model='cube', texture = 'shore', position=(0,0,0), scale=(2,0.2,1), color=color.red)
-    player2.update = Func(lambda: None)  # désactive le comportement FPS par défaut
-    player2.collider = BoxCollider(player2, Vec3(0,0,0), Vec3(2,5,2))
-    #player2.collider.visible = True
+    player2.update = Func(lambda: None)
+    player2.collider = BoxCollider(player2, Vec3(0,0,0), Vec3(2,.5,2))
     player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
+    player2.position = (0, 500, -10)  # <-- Idem pour player2
+    player2.rotate(Vec3(0, 180, 0), relative_to=player2)  # Pour que player2 regarde dans la direction opposée
+
     return player, player2
+
+def players_setup(player, player2):
+    # Position initiale des joueurs
+    player.position = (0, 500, 10)
+    player2.position = (0, 500, -10)
+
+    # Rotation initiale des joueurs
+    player.rotation = Vec3(0, 0, 0)
+    player2.rotation = Vec3(0, 180, 0)  # Pour que player2 regarde dans la direction opposée
+
+    # Vitesse initiale
+    player.speed = 20
+    player2.speed = 20
 
 def players_input(player, player2, cam1, cam2, speed):
     rotation_speed = 60 * time.dt
@@ -147,10 +162,11 @@ def entities_interaction(player, player2):
     # Détection collision player <-> sphères
     for e in scene.entities:
         if player.intersects(e).hit:
-            print(f"Collision avec une sphère à la position {e.position}")
-            player.position = Vec3(0, 5, 0)  # Réinitialise la position du joueur²
+            print(f"Collision1 avec une sphère à la position {e.position}, name: {e.name}, model: {e.model}")
+            return 1
             # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
         if player2.intersects(e).hit:
             print(f"Collision avec une sphère à la position {e.position}")
-            player2.position = Vec3(0, 5, 0)  # Réinitialise la position du joueur²
+            return 2
             # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
+    return 0  # Pas de collision détectée

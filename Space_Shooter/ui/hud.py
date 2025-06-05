@@ -51,9 +51,27 @@ def hud_creation(player, player2):
         texture='models/cursor',  # <-- c'est ici qu'on met l'image
         color=color.rgba(255, 255, 0, 200),
     )
-    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2
 
-def update_hud(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, speed):
+    pause_panel = Entity(
+        model='quad',
+        parent=hud_right,
+        color=color.rgba(0, 0, 0, 0.6),
+        scale=(1, 1),
+        enabled=False,  # désactivé par défaut
+    )
+    # “Player X Wins!\nScore: Y”
+    pauser_text = Text(
+        text='azerrtyuiop',
+        position=(0, 0),  # (x, y) de -1 à 1, coin haut gauche
+        origin=(0,0),
+        scale=1.5,
+        color=color.rgba(1, 0, 0, 0.6),  # Couleur orange
+        font ='VeraMono.ttf',
+        enabled=False
+    )
+    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text
+
+def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, speed, pause_panel, pauser_text):
      # ----- Gun orienté comme la caméra -----
     crosshair_p1.text = f'{speed}\n||'
     crosshair_p2.text = f'{player2.speed}\n||'
@@ -82,3 +100,20 @@ def update_hud(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, playe
         focus_circle_2.rotation_z += 2
     else:
         focus_circle_2.visible = False
+
+    # ----- Pause panel -----
+    pause_panel.enabled = False
+    pauser_text.enabled = False
+
+def update_hud_pause(pause_panel, pauser_text):
+    pause_panel.enabled = True
+    pauser_text.enabled = True
+    pauser_text.text = 'PAUSED\nPress A to resume'
+    # On peut ajouter d'autres éléments d'interface utilisateur ici si nécessaire
+
+def update_hud_end_game(pause_panel, pauser_text):
+    pause_panel.enabled = True
+    pauser_text.enabled = True
+    pauser_text.text = 'GAME END\nPress A to resume'
+
+    # On peut ajouter d'autres éléments d'interface utilisateur ici si nécessaire
