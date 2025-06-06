@@ -20,7 +20,7 @@ def hud_creation(player, player2):
         origin=(0,0),
         scale=1.5,
         color=color.rgba(1, 0, 0, 0.6),  # Couleur orange
-        font ='VeraMono.ttf',
+        font ='models/Tiny5-Regular.ttf',
     )
     crosshair_p2 = Text(
         text='||',
@@ -28,7 +28,7 @@ def hud_creation(player, player2):
         origin=(0,0),
         scale=1.5,
         color=color.rgba(1, 0, 0, 0.6),  # Couleur orange
-        font ='VeraMono.ttf',
+        font ='models/Tiny5-Regular.ttf',
     )
 
     hud_left = Entity(parent=camera.ui)
@@ -67,7 +67,7 @@ def hud_creation(player, player2):
         origin=(0,0),
         scale=1.5,
         color=color.rgba(1, 0, 0, 0.6),  # Couleur orange
-        font ='VeraMono.ttf',
+        font ='models/Tiny5-Regular.ttf',
         enabled=False
     )
     return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text
@@ -112,9 +112,9 @@ def update_hud_pause(pause_panel, pauser_text):
     pauser_text.text = 'PAUSED\nPress A to resume'
     # On peut ajouter d'autres éléments d'interface utilisateur ici si nécessaire
 
-def update_hud_end_game(pause_panel, pauser_text):
+def update_hud_end_game(pause_panel, pauser_text, player_win):
     pause_panel.enabled = True
     pauser_text.enabled = True
-    pauser_text.text = 'GAME END\nPress A to resume'
+    pauser_text.text = f'GAME END\n{player_win} WIN\nPress A to restart'
 
     # On peut ajouter d'autres éléments d'interface utilisateur ici si nécessaire

@@ -1,12 +1,14 @@
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from entities.lazer import Lazer
+from ursina.shaders import lit_with_shadows_shader
 
 def players_creation(editor_camera):
     player = FirstPersonController(model='cube', color=color.blue, collider='box', position=(0, 500, 0))
     player.visible_self = editor_camera.enabled
     player.name = 'player1'
-    player_body = Entity(parent=player, model='cube', texture='shore', position=(0,0,0), scale=(2,0.2,1), color=color.blue)
+    player_body = Entity(parent=player, model='models/Xwing', texture='models/Xwing_color',shader=lit_with_shadows_shader,color=color.white, position=(0,0,0), scale=(0.3,0.3,0.3))
+    player_body.rotation = Vec3(0, 180, 0)  # Pour que le joueur regarde dans la direction opposée
 
     player.speed = 20
     player.update = Func(lambda: None)  # désactive le comportement FPS par défaut
@@ -20,7 +22,8 @@ def players_creation(editor_camera):
     player2.speed = 20
     player2.visible_self = editor_camera.enabled
     player2.name = 'player2'
-    player2_body = Entity(parent=player2, model='cube', texture = 'shore', position=(0,0,0), scale=(2,0.2,1), color=color.red)
+    player2_body = Entity(parent=player2, model='models/Xwing', texture = 'models/Xwing_color',shader=lit_with_shadows_shader, position=(0,0,0), scale=(0.3,0.3,0.3), color=color.white)
+    player2_body.rotation = Vec3(0, 180, 0)  # Pour que le joueur regarde dans la direction opposée
     player2.update = Func(lambda: None)
     player2.collider = BoxCollider(player2, Vec3(0,0,0), Vec3(2,.5,2))
     player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)

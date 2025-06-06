@@ -24,6 +24,7 @@ player, player2 = players_creation(editor_camera)
 cam1, cam2, lens1, lens2 = camera_creation(player, player2)
 # Variables pour stocker la rotation
 pivot_rotation_x = 10
+player_win = None
 
 crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text = hud_creation(player, player2)
 
@@ -51,7 +52,7 @@ class GameState:
 
 
 def update():
-    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text
+    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win
     cam1.look_at(player)
     cam2.look_at(player2)
     if GameState.current == 'play':
@@ -61,12 +62,13 @@ def update():
         update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text)
 
         if entities_interaction(player, player2) != 0:
+            player_win = 'PLAYER 2' if entities_interaction(player, player2) == 1 else 'PLAYER 1'
             GameState.end_game()
     elif GameState.current == 'pause':
         # On ne fait rien, le jeu est en pause
         update_hud_pause(pause_panel, pauser_text)
     elif GameState.current == 'end_game':
-        update_hud_end_game(pause_panel, pauser_text)
+        update_hud_end_game(pause_panel, pauser_text, player_win)
     if GameState.current == 'setup_game':
         if GameState.changed:
             GameState.changed = False
@@ -92,6 +94,9 @@ def pause_input(key):
             GameState.reset()
         else:
             GameState.toggle()
+    elif key == 'z':
+        #quitter la fenetre
+        application.quit()
     elif key == 'tab':    # press tab to toggle edit/play mode
         editor_camera.enabled = not editor_camera.enabled
         #gun.enabled = not editor_camera.enabled
