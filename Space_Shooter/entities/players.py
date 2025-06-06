@@ -42,7 +42,7 @@ def players_setup(player, player2):
     player.speed = 20
     player2.speed = 20
 
-def players_input(player, player2, cam1, cam2, speed):
+def players_input(player, player2, cam1, cam2):
     rotation_speed = 60 * time.dt
 
     if held_keys['w']:
@@ -54,19 +54,19 @@ def players_input(player, player2, cam1, cam2, speed):
     if held_keys['a']:
         player.rotate(Vec3(0, 0, -rotation_speed*3), relative_to=player)
     if held_keys['t']:
-        speed += 2 
-        if speed > 300:
-            speed = 300
+        player.speed += 2 
+        if player.speed > 300:
+            player.speed = 300
     if held_keys['y']:
-        speed -= 2
-        if speed < 10:
-            speed = 10
+        player.speed -= 2
+        if player.speed < 10:
+            player.speed = 10
     if held_keys['g']:
         #vue de derrière
         cam1.set_pos(0, 2.2, 20)
     else:
         #vue de devant
-        cam1.set_pos(0, 2.2, -20 - 20 *(speed/500))
+        cam1.set_pos(0, 2.2, -20 - 20 *(player.speed/500))
     if held_keys['l']:
         #vue de derrière
         cam2.set_pos(0, 2.2, 20)
@@ -91,7 +91,7 @@ def players_input(player, player2, cam1, cam2, speed):
             player2.speed = 10
     # ----- Déplacement dans la direction du gun -----
     
-    player.position += player.gun.forward * speed * time.dt
+    player.position += player.gun.forward * player.speed * time.dt
     player2.position += player2.gun.forward * player2.speed * time.dt
 
     # ----- Tir -----
@@ -155,8 +155,6 @@ def players_input(player, player2, cam1, cam2, speed):
             rotation=aim_rotation,
             gun=player2.gun
         )
-
-    return speed
 
 def entities_interaction(player, player2):
     # Détection collision player <-> sphères

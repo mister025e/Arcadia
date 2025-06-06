@@ -24,17 +24,16 @@ player, player2 = players_creation(editor_camera)
 cam1, cam2, lens1, lens2 = camera_creation(player, player2)
 # Variables pour stocker la rotation
 pivot_rotation_x = 10
-speed = 20
 
 crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text = hud_creation(player, player2)
 
 class GameState:
-    current = 'play'
+    current = 'setup_game'
+    changed = True  # pour détecter les transitions
 
     @classmethod
     def toggle(cls):
-        cls.current = 'pause' if cls.current == 'play' else 'play' if cls.current != 'end_game' else cls.current
-        print(f"Game state changed to: {cls.current}")
+        cls.current = 'pause' if cls.current == 'play' else 'play' if cls.current == 'pause' else cls.current
 
     @classmethod
     def end_game(cls):
@@ -42,19 +41,24 @@ class GameState:
 
     @classmethod
     def reset(cls):
+        if cls.current != 'setup_game':
+            cls.current = 'setup_game'
+            cls.changed = True
+
+    @classmethod
+    def start_game(cls):
         cls.current = 'play'
-        players_setup(player, player2)
 
 
 def update():
-    global pivot_rotation_x, speed, crosshair_p1, crosshair_p2, pause_panel, pauser_text
+    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text
+    cam1.look_at(player)
+    cam2.look_at(player2)
     if GameState.current == 'play':
-        cam1.look_at(player)
-        cam2.look_at(player2)
         # ----- Mouvement joueur -----
-        speed = players_input(player, player2, cam1, cam2, speed)
+        players_input(player, player2, cam1, cam2)
 
-        update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, speed, pause_panel, pauser_text)
+        update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text)
 
         if entities_interaction(player, player2) != 0:
             GameState.end_game()
@@ -63,6 +67,24 @@ def update():
         update_hud_pause(pause_panel, pauser_text)
     elif GameState.current == 'end_game':
         update_hud_end_game(pause_panel, pauser_text)
+    if GameState.current == 'setup_game':
+        if GameState.changed:
+            GameState.changed = False
+            players_setup(player, player2)
+            def show_3():
+                pauser_text.enabled = True
+                pauser_text.text = '3'
+                invoke(show_2, delay=1)
+            def show_2():
+                pauser_text.text = '2'
+                invoke(show_1, delay=1)
+            def show_1():
+                pauser_text.text = '1'
+                invoke(hide_and_start, delay=1)
+            def hide_and_start():
+                pauser_text.enabled = False
+                GameState.start_game()
+            show_3()
 
 def pause_input(key):
     if key == 'q':

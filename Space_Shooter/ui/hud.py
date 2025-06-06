@@ -1,5 +1,6 @@
 from ursina import *
 from panda3d.core import Point3, Point2
+from time import sleep
 
 
 def project_to_screen(entity, cam_np, lens, region_offset=Vec2(0,0), region_scale=Vec2(1,1)):
@@ -71,9 +72,9 @@ def hud_creation(player, player2):
     )
     return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text
 
-def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, speed, pause_panel, pauser_text):
+def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text):
      # ----- Gun orienté comme la caméra -----
-    crosshair_p1.text = f'{speed}\n||'
+    crosshair_p1.text = f'{player.speed}\n||'
     crosshair_p2.text = f'{player2.speed}\n||'
 
     screen_pos = project_to_screen(player2, cam1, lens1, region_offset=Vec2(-0.5, 0), region_scale=Vec2(0.5, 1))
