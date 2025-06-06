@@ -12,7 +12,8 @@ def players_creation(editor_camera):
 
     player.speed = 20
     player.update = Func(lambda: None)  # désactive le comportement FPS par défaut
-    player.collider = BoxCollider(player, Vec3(0,0,0), Vec3(2,.5,2))
+    player.collider = BoxCollider(player, Vec3(0,0,0), Vec3(6.5,2,6.5))
+    #player.collider.visible = True  # Rendre le collider visible pour le débogage
     player.gun = Entity(model='scale_gizmo', parent=player, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
 
     player.position = (0, 500, 10)  # <-- Force la position après la désactivation du comportement
@@ -22,10 +23,11 @@ def players_creation(editor_camera):
     player2.speed = 20
     player2.visible_self = editor_camera.enabled
     player2.name = 'player2'
-    player2_body = Entity(parent=player2, model='models/Xwing', texture = 'models/Xwing_color',shader=lit_with_shadows_shader, position=(0,0,0), scale=(0.3,0.3,0.3), color=color.white)
+    player2_body = Entity(parent=player2, model='models/imp_fly_tieinterceptor', texture = 'models/imp_fly_tiefighter',shader=lit_with_shadows_shader, position=(0,-0.5,0), scale=(0.5,0.5,0.5), color=color.white)
     player2_body.rotation = Vec3(0, 180, 0)  # Pour que le joueur regarde dans la direction opposée
     player2.update = Func(lambda: None)
-    player2.collider = BoxCollider(player2, Vec3(0,0,0), Vec3(2,.5,2))
+    player2.collider = BoxCollider(player2, Vec3(0,0,.5), Vec3(3.5,2.5,3))
+    #player2.collider.visible = True  # Rendre le collider visible pour le débogage
     player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
     player2.position = (0, 500, -10)  # <-- Idem pour player2
     player2.rotate(Vec3(0, 180, 0), relative_to=player2)  # Pour que player2 regarde dans la direction opposée

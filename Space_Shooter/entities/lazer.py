@@ -52,6 +52,6 @@ class Lazer(Entity):
 
         if hit.hit and hit.entity.name in ('player1', 'player2'):  # selon qui tire
             print(f"Touché : {hit.entities} à la position {hit.world_point}")
-            hit.entity.position = Vec3(0, 5, 0)  # Réinitialise la position du joueur touché
+            hit.entity.position = Vec3(0, 0, 0)  # Réinitialise la position du joueur touché
             destroy(self)
             return  # <-- Ajoute ce return aussi

@@ -69,3 +69,6 @@ def map_generation():
         #e = scene.entities[-1]
         #if hasattr(e, 'collider') and e.collider:
             #e.collider.visible = True
+    lucrehulk = Entity(model='models/lucrehulk', texture = 'models/lucrehulk', collider='mesh', position=(0,250,0), scale=40)
+    lucrehulk.rotation = Vec3(90, 0, 0)  # Pour que le Lucrehulk regarde dans la direction opposée
+    #lucrehulk.collider.visible = True

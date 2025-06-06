@@ -26,7 +26,7 @@ cam1, cam2, lens1, lens2 = camera_creation(player, player2)
 pivot_rotation_x = 10
 player_win = None
 
-crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text = hud_creation(player, player2)
+crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, minimap = hud_creation(player, player2)
 
 class GameState:
     current = 'setup_game'
@@ -52,7 +52,7 @@ class GameState:
 
 
 def update():
-    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win
+    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win, minimap
     cam1.look_at(player)
     cam2.look_at(player2)
     if GameState.current == 'play':

@@ -70,12 +70,22 @@ def hud_creation(player, player2):
         font ='models/Tiny5-Regular.ttf',
         enabled=False
     )
-    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text
+
+    minimap = Entity(
+        parent=hud_right,
+        model='circle',  # Utilise un modèle circulaire au lieu de 'quad'
+        texture='white_cube',
+        color=color.rgba(0,0,0,255),
+        scale=(0.2, 0.2),
+        position=Vec3(-0.1, -0.4, 0),  # coin haut droit
+    )
+
+    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, minimap
 
 def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text):
      # ----- Gun orienté comme la caméra -----
-    crosshair_p1.text = f'{player.speed}\n||'
-    crosshair_p2.text = f'{player2.speed}\n||'
+    crosshair_p1.text = f'{player.speed}\n| |'
+    crosshair_p2.text = f'{player2.speed}\n| |'
 
     screen_pos = project_to_screen(player2, cam1, lens1, region_offset=Vec2(-0.5, 0), region_scale=Vec2(0.5, 1))
     #print(f"Screen position player2: {screen_pos}")
