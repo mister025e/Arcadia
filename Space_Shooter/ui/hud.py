@@ -1,6 +1,6 @@
 from ursina import *
 from panda3d.core import Point3, Point2
-from time import sleep
+from math import degrees, atan2
 
 
 def project_to_screen(entity, cam_np, lens, region_offset=Vec2(0,0), region_scale=Vec2(1,1)):
@@ -12,6 +12,33 @@ def project_to_screen(entity, cam_np, lens, region_offset=Vec2(0,0), region_scal
         return Vec2(p2d.x * region_scale.x + region_offset.x,
                     p2d.y * region_scale.y + region_offset.y)
     return None
+
+def get_relative_direction_angle(observer, target):
+    """
+    Retourne l'angle (en degrés) entre la direction vers le `target`
+    et l'orientation actuelle de l'`observer`, sur l'axe XZ (vue de dessus).
+    
+    - 0° = devant
+    - 180° = derrière
+    - 90° = à droite
+    - 270° = à gauche
+    """
+    # Vecteur direction du joueur observer
+    forward = observer.forward
+    forward.y = 0
+    forward.normalize()
+
+    # Vecteur vers la cible (target)
+    to_target = target.world_position - observer.world_position
+    to_target.y = 0
+    to_target.normalize()
+
+    # Calcul de l'angle entre les deux vecteurs (en radians)
+    angle_rad = atan2(to_target.x, to_target.z) - atan2(forward.x, forward.z)
+
+    # Conversion en degrés (et mise entre 0-360)
+    angle_deg = (degrees(angle_rad) + 360) % 360
+    return angle_deg
 
 def hud_creation(player, player2):
     crosshair_p1 = Text(
@@ -71,18 +98,21 @@ def hud_creation(player, player2):
         enabled=False
     )
 
-    minimap = Entity(
+    boussole = Entity(
         parent=hud_right,
-        model='circle',  # Utilise un modèle circulaire au lieu de 'quad'
-        texture='white_cube',
-        color=color.rgba(0,0,0,255),
-        scale=(0.2, 0.2),
-        position=Vec3(-0.1, -0.4, 0),  # coin haut droit
+        model='quad',  # Utilise un modèle circulaire au lieu de 'quad'
+        texture='models/Empire_logo',
+        color=color.rgba(255,0,0,200),
+        scale=(0.05, 0.05),
+        position=Vec3(-0.5, 0, 0),  # coin haut droit
+        rotate_point_2d=(0, 0),  # point de rotation au centre du cercle
+        origin=(0, -5),  # origine au centre du cercle
+        rotation_z=90,  # rotation initiale
     )
 
-    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, minimap
+    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole
 
-def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text):
+def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole):
      # ----- Gun orienté comme la caméra -----
     crosshair_p1.text = f'{player.speed}\n| |'
     crosshair_p2.text = f'{player2.speed}\n| |'
@@ -97,8 +127,12 @@ def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, 
         focus_circle_1.scale = Vec3(min(max(5 - distance_to_player2, 0.08), 0.5), min(max(5 - distance_to_player2, 0.08), 0.5), 1)
         focus_circle_1.rotation_z += 2
         #print(f"Distance to player2: {distance_to_player2}, Circle scale: {focus_circle_1.scale}")
+        boussole.visible = False
     else:
         focus_circle_1.visible = False
+        # ----- Boussole -----
+        boussole.visible = True
+        boussole.rotation_z = get_relative_direction_angle(player, player2) - player.rotation_z
 
     screen_pos2 = project_to_screen(player, cam2, lens2, region_offset=Vec2(0.5, 0), region_scale=Vec2(0.5, 1))
     #print(f"Screen position player: {screen_pos2}")
@@ -111,6 +145,7 @@ def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, 
         focus_circle_2.rotation_z += 2
     else:
         focus_circle_2.visible = False
+
 
     # ----- Pause panel -----
     pause_panel.enabled = False
