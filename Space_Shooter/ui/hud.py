@@ -1,6 +1,7 @@
 from ursina import *
 from panda3d.core import Point3, Point2
-from math import degrees, atan2
+from math import atan2, degrees, radians, sin, cos
+from ursina import Vec3
 
 
 def project_to_screen(entity, cam_np, lens, region_offset=Vec2(0,0), region_scale=Vec2(1,1)):
@@ -13,32 +14,30 @@ def project_to_screen(entity, cam_np, lens, region_offset=Vec2(0,0), region_scal
                     p2d.y * region_scale.y + region_offset.y)
     return None
 
-def get_relative_direction_angle(observer, target):
-    """
-    Retourne l'angle (en degrés) entre la direction vers le `target`
-    et l'orientation actuelle de l'`observer`, sur l'axe XZ (vue de dessus).
-    
-    - 0° = devant
-    - 180° = derrière
-    - 90° = à droite
-    - 270° = à gauche
-    """
-    # Vecteur direction du joueur observer
-    forward = observer.forward
-    forward.y = 0
-    forward.normalize()
+def look_at_truc(observer, target):
+    direction = target.world_position - observer.world_position
 
-    # Vecteur vers la cible (target)
-    to_target = target.world_position - observer.world_position
-    to_target.y = 0
-    to_target.normalize()
+    # Ignore si même position
+    if direction.length() == 0:
+        return
 
-    # Calcul de l'angle entre les deux vecteurs (en radians)
-    angle_rad = atan2(to_target.x, to_target.z) - atan2(forward.x, forward.z)
+    # Rotation Y (orientation horizontale)
+    angle_y = degrees(atan2(direction.x, direction.z))
 
-    # Conversion en degrés (et mise entre 0-360)
-    angle_deg = (degrees(angle_rad) + 360) % 360
-    return angle_deg
+    # Rotation X (inclinaison haut/bas) — on calcule dans le plan YZ
+    horizontal_dist = sqrt(direction.x ** 2 + direction.z ** 2)
+    angle_x = degrees(atan2(direction.y, horizontal_dist))
+
+    if direction.x < 0:
+        observer.rotation_y = angle_y
+    else:
+        observer.rotation_y = -angle_y
+    #si terget est au dessus de l'observer, rotation négative
+    if direction.y > 0:
+        observer.rotation_x = angle_x
+    else:
+        observer.rotation_x = -angle_x  # vers le haut = rotation négative
+    #print(f"Observer rotation set to: {observer.rotation_y}, {observer.rotation_x}")
 
 def hud_creation(player, player2):
     crosshair_p1 = Text(
@@ -99,20 +98,23 @@ def hud_creation(player, player2):
     )
 
     boussole = Entity(
-        parent=hud_right,
-        model='quad',  # Utilise un modèle circulaire au lieu de 'quad'
-        texture='models/Empire_logo',
+        model='plane',  # Utilise un modèle circulaire au lieu de 'quad'
         color=color.rgba(255,0,0,200),
-        scale=(0.05, 0.05),
-        position=Vec3(-0.5, 0, 0),  # coin haut droit
-        rotate_point_2d=(0, 0),  # point de rotation au centre du cercle
-        origin=(0, -5),  # origine au centre du cercle
-        rotation_z=90,  # rotation initiale
+        position=Vec3(0, 0, 0),  # coin haut droit
+        origin=(0, 0, -5),  # origine au centre du cercle
     )
 
-    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole
+    modelwayfinderP1 = Entity(
+        parent=boussole,
+        model='models/modelwayfinder',  # Utilise un modèle circulaire au lieu de 'quad'
+        texture='models/modelwayfinderTexture',
+        color=color.rgba(255,0,0,200),
+        position=Vec3(0, 0, 5),  # coin haut droit
+    )
 
-def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole):
+    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1
+
+def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole, modelwayfinderP1):
      # ----- Gun orienté comme la caméra -----
     crosshair_p1.text = f'{player.speed}\n| |'
     crosshair_p2.text = f'{player2.speed}\n| |'
@@ -132,7 +134,12 @@ def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, 
         focus_circle_1.visible = False
         # ----- Boussole -----
         boussole.visible = True
-        boussole.rotation_z = get_relative_direction_angle(player, player2) - player.rotation_z
+        #s'orienter vers le joueur 2
+        boussole.position = player.position  # Positionner la boussole au-dessus du joueur
+        boussole.look_at(player2.world_position)
+        look_at_truc(modelwayfinderP1, player2)
+        modelwayfinderP1.rotation_x -= 90  # Réinitialiser la rotation X pour éviter l'inclinaison
+        
 
     screen_pos2 = project_to_screen(player, cam2, lens2, region_offset=Vec2(0.5, 0), region_scale=Vec2(0.5, 1))
     #print(f"Screen position player: {screen_pos2}")

@@ -26,7 +26,7 @@ cam1, cam2, lens1, lens2 = camera_creation(player, player2)
 pivot_rotation_x = 10
 player_win = None
 
-crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole = hud_creation(player, player2)
+crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1 = hud_creation(player, player2)
 
 class GameState:
     current = 'setup_game'
@@ -52,14 +52,14 @@ class GameState:
 
 
 def update():
-    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win, boussole
+    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win, boussole, modelwayfinderP1
     cam1.look_at(player)
     cam2.look_at(player2)
     if GameState.current == 'play':
         # ----- Mouvement joueur -----
         players_input(player, player2, cam1, cam2)
 
-        update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole)
+        update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole, modelwayfinderP1)
 
         if entities_interaction(player, player2) != 0:
             player_win = 'PLAYER 2' if entities_interaction(player, player2) == 1 else 'PLAYER 1'
