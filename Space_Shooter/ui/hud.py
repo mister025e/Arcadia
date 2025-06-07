@@ -14,31 +14,6 @@ def project_to_screen(entity, cam_np, lens, region_offset=Vec2(0,0), region_scal
                     p2d.y * region_scale.y + region_offset.y)
     return None
 
-def look_at_truc(observer, target):
-    direction = target.world_position - observer.world_position
-
-    # Ignore si même position
-    if direction.length() == 0:
-        return
-
-    # Rotation Y (orientation horizontale)
-    angle_y = degrees(atan2(direction.x, direction.z))
-
-    # Rotation X (inclinaison haut/bas) — on calcule dans le plan YZ
-    horizontal_dist = sqrt(direction.x ** 2 + direction.z ** 2)
-    angle_x = degrees(atan2(direction.y, horizontal_dist))
-
-    if direction.x < 0:
-        observer.rotation_y = angle_y
-    else:
-        observer.rotation_y = -angle_y
-    #si terget est au dessus de l'observer, rotation négative
-    if direction.y > 0:
-        observer.rotation_x = angle_x
-    else:
-        observer.rotation_x = -angle_x  # vers le haut = rotation négative
-    #print(f"Observer rotation set to: {observer.rotation_y}, {observer.rotation_x}")
-
 def hud_creation(player, player2):
     crosshair_p1 = Text(
         text='||',
@@ -99,7 +74,7 @@ def hud_creation(player, player2):
 
     boussole = Entity(
         model='plane',  # Utilise un modèle circulaire au lieu de 'quad'
-        color=color.rgba(255,0,0,200),
+        color=color.rgba(255,0,0,0),
         position=Vec3(0, 0, 0),  # coin haut droit
         origin=(0, 0, -5),  # origine au centre du cercle
     )
@@ -108,8 +83,9 @@ def hud_creation(player, player2):
         parent=boussole,
         model='models/modelwayfinder',  # Utilise un modèle circulaire au lieu de 'quad'
         texture='models/modelwayfinderTexture',
-        color=color.rgba(255,0,0,200),
+        color=color.rgba(255,255,255,128),
         position=Vec3(0, 0, 5),  # coin haut droit
+        scale = Vec3(0.8, 0.8, 0.8),  # Ajuste la taille du modèle
     )
 
     return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1
@@ -137,8 +113,9 @@ def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, 
         #s'orienter vers le joueur 2
         boussole.position = player.position  # Positionner la boussole au-dessus du joueur
         boussole.look_at(player2.world_position)
-        look_at_truc(modelwayfinderP1, player2)
-        modelwayfinderP1.rotation_x -= 90  # Réinitialiser la rotation X pour éviter l'inclinaison
+        modelwayfinderP1.rotation = (0, 0, 0)  # reset local rotation
+        modelwayfinderP1.rotation_z = 0  # aligne la flèche vers le haut de la boussole
+        modelwayfinderP1.rotation_x += 90  # Réinitialiser la rotation X pour éviter l'inclinaison
         
 
     screen_pos2 = project_to_screen(player, cam2, lens2, region_offset=Vec2(0.5, 0), region_scale=Vec2(0.5, 1))
