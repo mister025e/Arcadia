@@ -47,7 +47,7 @@ def players_setup(player, player2):
     player.speed = 20
     player2.speed = 20
 
-def players_input(player, player2, cam1, cam2):
+def players_input(player, player2, cam1, cam2, focus_circle_1, focus_circle_2):
     rotation_speed = 60 * time.dt
 
     if held_keys['w']:
@@ -101,11 +101,11 @@ def players_input(player, player2, cam1, cam2):
 
     # ----- Tir -----
     if held_keys['f']:
-        lazer_entity = Lazer(gun=player.gun, color=color.red)
+        lazer_entity = Lazer(gun=player.gun, focus_circle = focus_circle_1, target = player2, color=color.red)
 
 
     if held_keys['k']:
-        lazer_entity = Lazer(gun=player2.gun, color=color.red)
+        lazer_entity = Lazer(gun=player2.gun, focus_circle = focus_circle_2, target = player, color=color.red)
 
 def entities_interaction(player, player2):
     # Détection collision player <-> sphères

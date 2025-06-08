@@ -61,7 +61,7 @@ def update():
     cam2.look_at(player2)
     if GameState.current == 'play':
         # ----- Mouvement joueur -----
-        players_input(player, player2, cam1, cam2)
+        players_input(player, player2, cam1, cam2, focus_circle_1, focus_circle_2)
 
         update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, CAM1_MASK, CAM2_MASK)
 

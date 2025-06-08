@@ -126,7 +126,11 @@ def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, 
         distance_to_player2 = distance(player.world_position, player2.world_position)
         focus_circle_1.scale = Vec3(min(max(5 - distance_to_player2, 0.08), 0.5), min(max(5 - distance_to_player2, 0.08), 0.5), 1)
         focus_circle_1.rotation_z += 2
-        print(focus_circle_1.position)
+        if 0 < focus_circle_1.position.y < 0.152 and -0.52 < focus_circle_1.position.x < -0.37:
+            focus_circle_1.color = color.rgba(0, 255, 0, 200)  # Change la couleur du cercle si le joueur est dans la zone
+        else:
+            focus_circle_1.color = color.rgba(255, 255, 0, 200)
+        #print(focus_circle_1.position)
         #print(f"Distance to player2: {distance_to_player2}, Circle scale: {focus_circle_1.scale}")
         boussole.visible = False
     else:
