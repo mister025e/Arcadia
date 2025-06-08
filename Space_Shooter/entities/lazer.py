@@ -16,6 +16,7 @@ class Lazer(Entity):
 
         self.direction = self.forward.normalized()  # capturer la direction réelle
         self.gun = gun
+        self.name = 'lazer'
         self.speed = speed
         self.collider = BoxCollider(self, center=Vec3(0,0,2.5), size=Vec3(1,1,5))
         print(focus_circle.position.x, focus_circle.position.y, focus_circle.position.z)
@@ -43,5 +44,7 @@ class Lazer(Entity):
 
         if hit.hit and hit.entity.name in ('player1', 'player2'):
             print(f"Touché : {hit.entity} à {hit.world_point}")
-            hit.entity.position = Vec3(0, 0, 0)
+            if hit.entity.pv <= 0:
+                hit.entity.position = Vec3(0, 0, 0)
+            hit.entity.pv -= 1
             destroy(self)

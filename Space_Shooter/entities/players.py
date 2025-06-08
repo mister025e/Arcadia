@@ -7,10 +7,11 @@ def players_creation(editor_camera):
     player = FirstPersonController(model='cube', color=color.blue, collider='box', position=(0, 500, 0))
     player.visible_self = editor_camera.enabled
     player.name = 'player1'
-    player_body = Entity(parent=player, model='models/Xwing', texture='models/Xwing_color',shader=lit_with_shadows_shader,color=color.white, position=(0,0,0), scale=(0.3,0.3,0.3))
-    player_body.rotation = Vec3(0, 180, 0)  # Pour que le joueur regarde dans la direction opposée
+    player.body = Entity(parent=player, model='models/Xwing', texture='models/Xwing_color',shader=lit_with_shadows_shader,color=color.rgb(255, 255, 255), position=(0,0,0), scale=(0.3,0.3,0.3))
+    player.body.rotation = Vec3(0, 180, 0)  # Pour que le joueur regarde dans la direction opposée
 
     player.speed = 20
+    player.pv = 5
     player.update = Func(lambda: None)  # désactive le comportement FPS par défaut
     player.collider = BoxCollider(player, Vec3(0,0,0), Vec3(6.5,2,6.5))
     #player.collider.visible = True  # Rendre le collider visible pour le débogage
@@ -21,10 +22,11 @@ def players_creation(editor_camera):
     # Joueur 2 (rouge)
     player2 = Entity(model='cube', color=color.orange, position=(5, 20, 0))
     player2.speed = 20
+    player2.pv = 5
     player2.visible_self = editor_camera.enabled
     player2.name = 'player2'
-    player2_body = Entity(parent=player2, model='models/imp_fly_tieinterceptor', texture = 'models/imp_fly_tiefighter',shader=lit_with_shadows_shader, position=(0,-0.5,0), scale=(0.5,0.5,0.5), color=color.white)
-    player2_body.rotation = Vec3(0, 180, 0)  # Pour que le joueur regarde dans la direction opposée
+    player2.body = Entity(parent=player2, model='models/imp_fly_tieinterceptor', texture = 'models/imp_fly_tiefighter',shader=lit_with_shadows_shader, position=(0,-0.5,0), scale=(0.5,0.5,0.5), color=color.rgb(255, 255, 255))
+    player2.body.rotation = Vec3(0, 180, 0)  # Pour que le joueur regarde dans la direction opposée
     player2.update = Func(lambda: None)
     player2.collider = BoxCollider(player2, Vec3(0,0,.5), Vec3(3.5,2.5,3))
     #player2.collider.visible = True  # Rendre le collider visible pour le débogage
@@ -46,6 +48,10 @@ def players_setup(player, player2):
     # Vitesse initiale
     player.speed = 20
     player2.speed = 20
+    player.pv = 5
+    player2.pv = 5
+    player.body.color = color.rgb(255, 255, 255)
+    player2.body.color = color.rgb(255, 255, 255)
 
 def players_input(player, player2, cam1, cam2, focus_circle_1, focus_circle_2):
     rotation_speed = 60 * time.dt
@@ -112,19 +118,28 @@ def players_input(player, player2, cam1, cam2, focus_circle_1, focus_circle_2):
         player2.gun.on_cooldown = True
         invoke(setattr, player2.gun, 'on_cooldown', False, delay=0.2)
 
+    player.body.color = color.rgb(255-(6-player.pv)*30, 255-(6-player.pv)*30, 255-(6-player.pv)*30)
+    player2.body.color = color.rgb(255, 255-(6-player2.pv)*30, 255-(6-player2.pv)*30)
+
 def entities_interaction(player, player2):
     # Détection collision player <-> sphères
     for e in scene.entities:
         if player.intersects(e).hit:
             print(f"Collision1 avec une sphère à la position {e.position}, name: {e.name}, model: {e.model}")
-            if e.name == 'player2':
-                return 3
-            return 1
+            if player.pv <= 0 or e.name != 'lazer':
+                if e.name == 'player2':
+                    return 3
+                return 1
+            else:
+                player.pv -= 1
             # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
         if player2.intersects(e).hit:
             print(f"Collision avec une sphère à la position {e.position}, name: {e.name}, model: {e.model}")
-            if e.name == 'player1':
-                return 3
-            return 2
+            if player2.pv <= 0:
+                if e.name == 'player1' or e.name != 'lazer':
+                    return 3
+                return 2
+            else:
+                player.pv -= 1
             # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
     return 0  # Pas de collision détectée
