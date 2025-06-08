@@ -1,58 +1,58 @@
 from ursina import *
 
 def map_generation():
-    ground = Entity(model='plane', collider='box', scale=2048, texture='models/quadrillage', texture_scale=(4,4), color=color.rgba(255, 255, 255, 120))
+    ground = Entity(model='plane', collider='box', scale=2048, texture='models/quadrillage', texture_scale=(4,4), color=color.rgba(255, 255, 255, 64))
     wall = Entity(
         model='quad',
         collider='box',
-        scale=(2048, 2048, 1),
+        scale=2048,
         texture='models/quadrillage',
         texture_scale=(4,4),
         position=(0, 1024, 1024),
-        color=color.rgba(255, 255, 255, 120)  # transparence ajoutée
+        color=color.rgba(255, 255, 255, 64)  # transparence ajoutée
     )
-    wall.collider.visible = True
+    #wall.collider.visible = True
     wall2 = Entity(
         model='quad',
         collider='box',
-        scale=(2048, 2048, 1),
+        scale=2048,
         texture='models/quadrillage',
         texture_scale=(4,4),
         position=(0, 1024, -1024),
         rotation_y=180,
-        color=color.rgba(255, 255, 255, 120)
+        color=color.rgba(255, 255, 255, 64)
     )
     wall3 = Entity(
         model='quad',
         collider='box',
-        scale=(2048, 2048, 1),
+        scale=2048,
         texture='models/quadrillage',
         texture_scale=(4,4),
         position=(1024, 1024, 0),
         rotation_y=90,
-        color=color.rgba(255, 255, 255, 120)
+        color=color.rgba(255, 255, 255, 64)
     )
     wall4 = Entity(
         model='quad',
         collider='box',
-        scale=(2048, 2048, 1),
+        scale=2048,
         texture='models/quadrillage',
         texture_scale=(4,4),
         position=(-1024, 1024, 0),
         rotation_y=-90,
-        color=color.rgba(255, 255, 255, 120)
+        color=color.rgba(255, 255, 255, 64)
     )
     wall5 = Entity(
         model='quad',
         collider='box',
-        scale=(2048, 2048, 1),
+        scale=2048,
         texture='models/quadrillage',
         texture_scale=(4,4),
         position=(0, 2048, 0),
         rotation_x=-90,
-        color=color.rgba(255, 255, 255, 120)
+        color=color.rgba(255, 255, 255, 64)
     )
-    ground.collider.visible = True
+    #ground.collider.visible = True
 
     for i in range(512):
         scale_x_value = random.uniform(2,30)
