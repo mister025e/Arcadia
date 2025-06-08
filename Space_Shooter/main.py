@@ -66,7 +66,7 @@ def update():
         update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, CAM1_MASK, CAM2_MASK)
 
         if entities_interaction(player, player2) != 0:
-            player_win = 'PLAYER 2' if entities_interaction(player, player2) == 1 else 'PLAYER 1'
+            player_win = 'PLAYER 2 WIN' if entities_interaction(player, player2) == 1 else 'PLAYER 1 WIN' if entities_interaction(player, player2) == 2 else "ALL PLAYERS LOOSE"
             GameState.end_game()
     elif GameState.current == 'pause':
         # On ne fait rien, le jeu est en pause

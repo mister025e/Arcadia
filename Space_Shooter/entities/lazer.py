@@ -3,11 +3,11 @@ from ursina import *
 lazer_container = Entity()
 
 class Lazer(Entity):
-    def __init__(self, gun, focus_circle, target, color=color.red, speed=1000, **kwargs):
+    def __init__(self, gun, focus_circle, target, color=color.red, speed=2000, **kwargs):
         super().__init__(
             parent=lazer_container,
             model='cube',
-            scale=(0.2, 0.2, 5),
+            scale=(0.5, 0.5, 5),
             color=color,
             position=gun.world_position + gun.forward * 4,
             rotation=gun.world_rotation,
@@ -18,8 +18,8 @@ class Lazer(Entity):
         self.gun = gun
         self.speed = speed
         self.collider = BoxCollider(self, center=Vec3(0,0,2.5), size=Vec3(1,1,5))
-        #print(focus_circle.position.x, focus_circle.position.y, focus_circle.position.z)
-        if 0 < focus_circle.position.y < 0.152 and -0.52 < focus_circle.position.x < -0.37:
+        print(focus_circle.position.x, focus_circle.position.y, focus_circle.position.z)
+        if ((0 < focus_circle.position.y < 0.152 and -0.52 < focus_circle.position.x < -0.37) or (0 < focus_circle.position.y < 0.152 and 0.37 < focus_circle.position.x < 0.52)) and focus_circle.visible:
             self.look_at(target.world_position)
             self.direction = self.forward.normalized()
 

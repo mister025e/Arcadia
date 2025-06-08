@@ -100,22 +100,31 @@ def players_input(player, player2, cam1, cam2, focus_circle_1, focus_circle_2):
     player2.position += player2.gun.forward * player2.speed * time.dt
 
     # ----- Tir -----
-    if held_keys['f']:
-        lazer_entity = Lazer(gun=player.gun, focus_circle = focus_circle_1, target = player2, color=color.red)
+    # Tir joueur 1
+    if held_keys['f'] and not player.gun.on_cooldown:
+        lazer_entity = Lazer(gun=player.gun, focus_circle=focus_circle_1, target=player2, color=color.red)
+        player.gun.on_cooldown = True
+        invoke(setattr, player.gun, 'on_cooldown', False, delay=0.2)
 
-
-    if held_keys['k']:
-        lazer_entity = Lazer(gun=player2.gun, focus_circle = focus_circle_2, target = player, color=color.red)
+    # Tir joueur 2
+    if held_keys['k'] and not player2.gun.on_cooldown:
+        lazer_entity = Lazer(gun=player2.gun, focus_circle=focus_circle_2, target=player, color=color.red)
+        player2.gun.on_cooldown = True
+        invoke(setattr, player2.gun, 'on_cooldown', False, delay=0.2)
 
 def entities_interaction(player, player2):
     # Détection collision player <-> sphères
     for e in scene.entities:
         if player.intersects(e).hit:
             print(f"Collision1 avec une sphère à la position {e.position}, name: {e.name}, model: {e.model}")
+            if e.name == 'player2':
+                return 3
             return 1
             # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
         if player2.intersects(e).hit:
-            print(f"Collision avec une sphère à la position {e.position}")
+            print(f"Collision avec une sphère à la position {e.position}, name: {e.name}, model: {e.model}")
+            if e.name == 'player1':
+                return 3
             return 2
             # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
     return 0  # Pas de collision détectée
