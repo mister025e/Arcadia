@@ -126,6 +126,7 @@ def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, 
         distance_to_player2 = distance(player.world_position, player2.world_position)
         focus_circle_1.scale = Vec3(min(max(5 - distance_to_player2, 0.08), 0.5), min(max(5 - distance_to_player2, 0.08), 0.5), 1)
         focus_circle_1.rotation_z += 2
+        print(focus_circle_1.position)
         #print(f"Distance to player2: {distance_to_player2}, Circle scale: {focus_circle_1.scale}")
         boussole.visible = False
     else:

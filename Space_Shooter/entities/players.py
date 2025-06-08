@@ -101,65 +101,11 @@ def players_input(player, player2, cam1, cam2):
 
     # ----- Tir -----
     if held_keys['f']:
-        corrected_dir = player.gun.forward.normalized()
-
-        # Position actuelle et vitesse estimée de l'adversaire
-        enemy_pos = player2.world_position
-        enemy_velocity = player2.gun.forward.normalized() * player2.speed
-
-        # Estimation du temps que le lazer mettrait à atteindre la cible actuelle
-        distance_to_enemy = distance(player.gun.world_position, enemy_pos)
-        laser_speed = 150  # même valeur que dans ta classe Lazer
-        estimated_time = distance_to_enemy / laser_speed
-
-        # Position prédite
-        predicted_pos = enemy_pos + enemy_velocity * estimated_time
-
-        # Direction corrigée vers la position prédite
-        to_enemy = (predicted_pos - player.gun.world_position).normalized()
-
-        # Appliquer un aimbot léger si l’adversaire est proche du centre de visée
-        dot_product = corrected_dir.dot(to_enemy)
-        if dot_product > 0.94:  # tolérance ~20 degrés
-            corrected_dir = lerp(corrected_dir, to_enemy, 0.6).normalized()
-
-
-        dummy = Entity()
-        dummy.look_at(player.gun.world_position + corrected_dir)
-        aim_rotation = dummy.rotation
-        destroy(dummy)
-
-        #Entity(model='sphere', color=color.lime, position=predicted_pos, scale=0.3, lifetime=0.5)
-
-        lazer_entity = Lazer(
-            direction=corrected_dir,
-            position=player.gun.world_position,
-            color=color.red,
-            rotation=aim_rotation,
-            gun=player.gun
-        )
+        lazer_entity = Lazer(gun=player.gun, color=color.red)
 
 
     if held_keys['k']:
-        corrected_dir = player2.gun.forward.normalized()
-        to_enemy = (player.world_position - player2.gun.world_position).normalized()
-        dot_product = corrected_dir.dot(to_enemy)
-
-        if dot_product > 0.95:
-            corrected_dir = lerp(corrected_dir, to_enemy, 0.5).normalized()
-
-        dummy = Entity()
-        dummy.look_at(player2.gun.world_position + corrected_dir)
-        aim_rotation = dummy.rotation
-        destroy(dummy)
-
-        lazer_entity = Lazer(
-            direction=corrected_dir,
-            position=player2.gun.world_position,
-            color=color.red,
-            rotation=aim_rotation,
-            gun=player2.gun
-        )
+        lazer_entity = Lazer(gun=player2.gun, color=color.red)
 
 def entities_interaction(player, player2):
     # Détection collision player <-> sphères
