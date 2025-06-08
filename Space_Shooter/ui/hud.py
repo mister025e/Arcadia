@@ -1,5 +1,7 @@
 from ursina import *
 from panda3d.core import Point3, Point2
+from panda3d.core import BitMask32
+# from ursina.internal_utils import get_panda3d_node_path
 from math import atan2, degrees, radians, sin, cos
 from ursina import Vec3
 
@@ -87,13 +89,33 @@ def hud_creation(player, player2):
         position=Vec3(0, 0, 5),  # coin haut droit
         scale = Vec3(0.8, 0.8, 0.8),  # Ajuste la taille du modèle
     )
+    boussole2 = Entity(
+        model='plane',  # Utilise un modèle circulaire au lieu de 'quad'
+        color=color.rgba(255,0,0,0),
+        position=Vec3(0, 0, 0),  # coin haut droit
+        origin=(0, 0, -5),  # origine au centre du cercle
+    )
 
-    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1
+    modelwayfinderP2 = Entity(
+        parent=boussole2,
+        model='models/modelwayfinder',  # Utilise un modèle circulaire au lieu de 'quad'
+        texture='models/modelwayfinderTexture',
+        color=color.rgba(255,255,255,128),
+        position=Vec3(0, 0, 5),  # coin haut droit
+        scale = Vec3(0.8, 0.8, 0.8),  # Ajuste la taille du modèle
+    )
 
-def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole, modelwayfinderP1):
+    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2
+
+def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, CAM1_MASK, CAM2_MASK):
      # ----- Gun orienté comme la caméra -----
     crosshair_p1.text = f'{player.speed}\n| |'
     crosshair_p2.text = f'{player2.speed}\n| |'
+    
+    modelwayfinderP1.show(CAM1_MASK)
+    modelwayfinderP1.hide(CAM2_MASK)
+    modelwayfinderP2.show(CAM2_MASK)
+    modelwayfinderP2.hide(CAM1_MASK)
 
     screen_pos = project_to_screen(player2, cam1, lens1, region_offset=Vec2(-0.5, 0), region_scale=Vec2(0.5, 1))
     #print(f"Screen position player2: {screen_pos}")
@@ -127,8 +149,16 @@ def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, 
         distance_to_player = distance(player2.world_position, player.world_position)
         focus_circle_2.scale = Vec3(min(max(5 - distance_to_player, 0.08), 0.5), min(max(5 - distance_to_player, 0.08), 0.5), 1)
         focus_circle_2.rotation_z += 2
+        boussole2.visible = False
     else:
         focus_circle_2.visible = False
+        boussole2.visible = True
+        #s'orienter vers le joueur 2
+        boussole2.position = player2.position  # Positionner la boussole au-dessus du joueur
+        boussole2.look_at(player.world_position)
+        modelwayfinderP2.rotation = (0, 0, 0)  # reset local rotation
+        modelwayfinderP2.rotation_z = 0  # aligne la flèche vers le haut de la boussole
+        modelwayfinderP2.rotation_x += 90  # Réinitialiser la rotation X pour éviter l'inclinaison
 
 
     # ----- Pause panel -----

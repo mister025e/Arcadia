@@ -4,10 +4,14 @@ from ursina.shaders import lit_with_shadows_shader
 from ursina import raycast
 from panda3d.core import PerspectiveLens, Camera, NodePath
 from panda3d.core import Point3, Point2
+from panda3d.core import BitMask32
 from world.map_gen import map_generation
 from entities.players import players_creation, players_input, entities_interaction, players_setup
 from ui.camera import camera_creation
 from ui.hud import hud_creation, update_hud_play, update_hud_pause, update_hud_end_game
+
+CAM1_MASK = BitMask32.bit(1)
+CAM2_MASK = BitMask32.bit(2)
 
 app = Ursina()
 
@@ -21,12 +25,12 @@ editor_camera = EditorCamera(enabled=False, ignore_paused=True)
 player, player2 = players_creation(editor_camera)
 
 # Lens avec bon ratio (2x car demi-largeur)
-cam1, cam2, lens1, lens2 = camera_creation(player, player2)
+cam1, cam2, lens1, lens2 = camera_creation(player, player2, CAM1_MASK, CAM2_MASK)
 # Variables pour stocker la rotation
 pivot_rotation_x = 10
 player_win = None
 
-crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1 = hud_creation(player, player2)
+crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2 = hud_creation(player, player2)
 
 class GameState:
     current = 'setup_game'
@@ -52,14 +56,14 @@ class GameState:
 
 
 def update():
-    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win, boussole, modelwayfinderP1
+    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win, boussole, modelwayfinderP1, modelwayfinderP2, boussole2
     cam1.look_at(player)
     cam2.look_at(player2)
     if GameState.current == 'play':
         # ----- Mouvement joueur -----
         players_input(player, player2, cam1, cam2)
 
-        update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole, modelwayfinderP1)
+        update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, CAM1_MASK, CAM2_MASK)
 
         if entities_interaction(player, player2) != 0:
             player_win = 'PLAYER 2' if entities_interaction(player, player2) == 1 else 'PLAYER 1'

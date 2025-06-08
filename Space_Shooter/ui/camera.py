@@ -2,8 +2,9 @@ from ursina import *
 from ursina import raycast
 from panda3d.core import PerspectiveLens, Camera, NodePath
 from panda3d.core import Point3, Point2
+from panda3d.core import BitMask32
 
-def camera_creation(player, player2):
+def camera_creation(player, player2, CAM1_MASK, CAM2_MASK):
     # Créer un second DisplayRegion (vue droite)
     dr1 = base.win.make_display_region(0, 0.5, 0, 1)
     dr1.set_sort(0)
@@ -31,4 +32,6 @@ def camera_creation(player, player2):
     cam2.reparent_to(player2)
     cam2.node().get_lens().set_fov(40)  # champ de vision
     cam2.set_pos(0, 2.2, -20)
+    cam1.node().set_camera_mask(CAM1_MASK)
+    cam2.node().set_camera_mask(CAM2_MASK)
     return cam1, cam2, lens1, lens2
