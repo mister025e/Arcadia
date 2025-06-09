@@ -58,18 +58,19 @@ def hud_creation(player, player2):
 
     pause_panel = Entity(
         model='quad',
+        texture='models/overlay',  # <-- c'est ici qu'on met l'image
         parent=hud_right,
-        color=color.rgba(0, 0, 0, 0.6),
-        scale=(1, 1),
+        color=color.rgba(255, 255, 255, 255),
+        scale=(0.7, 1),
         enabled=False,  # désactivé par défaut
     )
     # “Player X Wins!\nScore: Y”
     pauser_text = Text(
         text='azerrtyuiop',
-        position=(0, 0),  # (x, y) de -1 à 1, coin haut gauche
+        position=(0, 0.1),  # (x, y) de -1 à 1, coin haut gauche
         origin=(0,0),
         scale=1.5,
-        color=color.rgba(1, 0, 0, 0.6),  # Couleur orange
+        color=color.rgb(255, 235, 82),  # Couleur orange
         font ='models/Tiny5-Regular.ttf',
         enabled=False
     )
@@ -183,6 +184,6 @@ def update_hud_pause(pause_panel, pauser_text):
 def update_hud_end_game(pause_panel, pauser_text, player_win):
     pause_panel.enabled = True
     pauser_text.enabled = True
-    pauser_text.text = f'GAME END\n{player_win}\nPress A to restart'
+    pauser_text.text = f'GAME END\n{player_win}\nPress A to restart\nPress W to quit'
 
     # On peut ajouter d'autres éléments d'interface utilisateur ici si nécessaire

@@ -76,6 +76,9 @@ def update():
     if GameState.current == 'setup_game':
         if GameState.changed:
             GameState.changed = False
+            pause_panel.enabled = False
+            pauser_text.scale=15
+            pauser_text.position=(0, 0)
             players_setup(player, player2)
             def show_3():
                 pauser_text.enabled = True
@@ -89,6 +92,8 @@ def update():
                 invoke(hide_and_start, delay=1)
             def hide_and_start():
                 pauser_text.enabled = False
+                pauser_text.scale=1.5
+                pauser_text.position=(0, 0.1)
                 GameState.start_game()
             show_3()
 
