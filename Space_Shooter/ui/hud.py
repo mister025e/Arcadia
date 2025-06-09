@@ -184,6 +184,13 @@ def update_hud_pause(pause_panel, pauser_text):
 def update_hud_end_game(pause_panel, pauser_text, player_win):
     pause_panel.enabled = True
     pauser_text.enabled = True
-    pauser_text.text = f'GAME END\n{player_win}\nPress A to restart\nPress W to quit'
+    pauser_text.text = f'\n\nGAME END\n{player_win}\n\nPress A to restart\nPress W to quit'
+
+    # On peut ajouter d'autres éléments d'interface utilisateur ici si nécessaire
+
+def update_hud_menu(pause_panel, pauser_text):
+    pause_panel.enabled = True
+    pauser_text.enabled = True
+    pauser_text.text = f'\n\n--STAR WARS--\nSpace Shooter\n\nPress A to start game\nPress W to quit'
 
     # On peut ajouter d'autres éléments d'interface utilisateur ici si nécessaire

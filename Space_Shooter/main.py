@@ -8,7 +8,7 @@ from panda3d.core import BitMask32
 from world.map_gen import map_generation
 from entities.players import players_creation, players_input, entities_interaction, players_setup
 from ui.camera import camera_creation
-from ui.hud import hud_creation, update_hud_play, update_hud_pause, update_hud_end_game
+from ui.hud import hud_creation, update_hud_play, update_hud_pause, update_hud_end_game, update_hud_menu
 
 CAM1_MASK = BitMask32.bit(1)
 CAM2_MASK = BitMask32.bit(2)
@@ -33,7 +33,7 @@ player_win = None
 crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2 = hud_creation(player, player2)
 
 class GameState:
-    current = 'setup_game'
+    current = 'menu'
     changed = True  # pour détecter les transitions
 
     @classmethod
@@ -54,6 +54,10 @@ class GameState:
     def start_game(cls):
         cls.current = 'play'
 
+    @classmethod
+    def menu(cls):
+        cls.current = 'menu'
+
 
 def update():
     global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win, boussole, modelwayfinderP1, modelwayfinderP2, boussole2
@@ -73,6 +77,10 @@ def update():
         update_hud_pause(pause_panel, pauser_text)
     elif GameState.current == 'end_game':
         update_hud_end_game(pause_panel, pauser_text, player_win)
+    if GameState.current == 'menu':
+        focus_circle_1.enabled = False
+        focus_circle_2.enabled = False
+        update_hud_menu(pause_panel, pauser_text)
     if GameState.current == 'setup_game':
         if GameState.changed:
             GameState.changed = False
@@ -94,12 +102,14 @@ def update():
                 pauser_text.enabled = False
                 pauser_text.scale=1.5
                 pauser_text.position=(0, 0.1)
+                focus_circle_1.enabled = True
+                focus_circle_2.enabled = True
                 GameState.start_game()
             show_3()
 
 def pause_input(key):
     if key == 'q':
-        if GameState.current == 'end_game':
+        if GameState.current == 'end_game' or GameState.current == 'menu':
             GameState.reset()
         else:
             GameState.toggle()

@@ -15,7 +15,7 @@ def players_creation(editor_camera):
     player.update = Func(lambda: None)  # désactive le comportement FPS par défaut
     player.collider = BoxCollider(player, Vec3(0,0,0), Vec3(6.5,2,6.5))
     #player.collider.visible = True  # Rendre le collider visible pour le débogage
-    player.gun = Entity(model='scale_gizmo', parent=player, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
+    player.gun = Entity(model='scale_gizmo', parent=player, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.rgba(0, 0, 0, 0), on_cooldown=False)
 
     player.position = (0, 500, 10)  # <-- Force la position après la désactivation du comportement
 
@@ -30,7 +30,7 @@ def players_creation(editor_camera):
     player2.update = Func(lambda: None)
     player2.collider = BoxCollider(player2, Vec3(0,0,.5), Vec3(3.5,2.5,3))
     #player2.collider.visible = True  # Rendre le collider visible pour le débogage
-    player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.red, on_cooldown=False)
+    player2.gun = Entity(model='scale_gizmo', parent=player2, position=(0,0,0), scale=(1,.5,1), origin_z=-.5, color=color.rgba(0, 0, 0, 0), on_cooldown=False)
     player2.position = (0, 500, -10)  # <-- Idem pour player2
     player2.rotate(Vec3(0, 180, 0), relative_to=player2)  # Pour que player2 regarde dans la direction opposée
 
@@ -108,13 +108,13 @@ def players_input(player, player2, cam1, cam2, focus_circle_1, focus_circle_2):
     # ----- Tir -----
     # Tir joueur 1
     if held_keys['f'] and not player.gun.on_cooldown:
-        lazer_entity = Lazer(gun=player.gun, focus_circle=focus_circle_1, target=player2, color=color.red)
+        lazer_entity = Lazer(gun=player.gun, focus_circle=focus_circle_1, target=player2, touche_enable_aimbot=['r', 'g'], color=color.red)
         player.gun.on_cooldown = True
         invoke(setattr, player.gun, 'on_cooldown', False, delay=0.2)
 
     # Tir joueur 2
     if held_keys['k'] and not player2.gun.on_cooldown:
-        lazer_entity = Lazer(gun=player2.gun, focus_circle=focus_circle_2, target=player, color=color.red)
+        lazer_entity = Lazer(gun=player2.gun, focus_circle=focus_circle_2, target=player, touche_enable_aimbot=['i', 'l'], color=color.green)
         player2.gun.on_cooldown = True
         invoke(setattr, player2.gun, 'on_cooldown', False, delay=0.2)
 
