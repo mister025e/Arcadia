@@ -1,4 +1,4 @@
-from ursina import Ursina, camera, application, time
+from ursina import Ursina, camera, application, time, destroy
 from entities.player import Player
 from entities.projectile import Projectile
 from map.world import World
@@ -32,8 +32,21 @@ class GameManager:
         self.gameover_space_delay = 0.5   # seconds
 
         # ------------ LOAD / WORLD / PLAYERS ------------
+        # Load leaderboard
         self.leaderboard_data = load_leaderboard()
-        self.world = World()
+
+        # Define player spawn positions (x, y, z)
+        p1_spawn = (-5, 0.5, -5)
+        p2_spawn = (5, 0.5, 5)
+
+        # Create world with covers excluding those spawns
+        # Note: World expects exclude_positions as list of (x, z)
+        self.world = World(exclude_positions=[
+            (p1_spawn[0], p1_spawn[2]),
+            (p2_spawn[0], p2_spawn[2])
+        ])
+
+        # Track active projectiles
         self.projectiles = []
 
         from ursina import color
@@ -262,13 +275,14 @@ class GameManager:
     def start_game(self):
         """
         Enter the 'playing' state: reset HP & timer, enable world & players & HUD.
+        Also destroy any old covers (tag=='cover') and regenerate them.
         """
         self.game_state = 'playing'
         self.match_start_time = time.time()
         self.last_score = 0
         self.score_saved = False
 
-        # Hide UI
+        # Hide all UI screens
         self.main_menu.hide()
         self.gameover_screen.hide()
         self.name_entry.hide()
@@ -276,17 +290,41 @@ class GameManager:
         self.instructions_screen.hide()
 
         # Reset players
+        p1_spawn = (-5, 0.5, -5)
+        p2_spawn = ( 5, 0.5,  5)
         self.p1.health = 100
         self.p2.health = 100
-        self.p1.position = (-5, 0.5, -5)
-        self.p2.position = (5, 0.5, 5)
+        self.p1.position = p1_spawn
+        self.p2.position = p2_spawn
 
-        # Enable map + players
-        for e in self.game_entities:
+        # --- Remove old covers ---
+        survivors = []
+        from ursina import destroy
+        for e in self.world.entities:
+            if getattr(e, 'tag', '') == 'cover':
+                destroy(e)
+            else:
+                survivors.append(e)
+        self.world.entities = survivors
+
+        # --- Recreate covers ---
+        # Pass the same exclude positions so they never overlap the spawns
+        self.world.exclude_positions = [(p1_spawn[0], p1_spawn[2]),
+                                        (p2_spawn[0], p2_spawn[2])]
+        self.world._create_covers()
+
+        # Enable map entities and players
+        for e in self.world.entities + [self.p1, self.p2]:
             e.enabled = True
+
+        # Rebuild game_entities so it includes the fresh covers
+        self.game_entities = self.world.entities + [self.p1, self.p2]
 
         # Enable HUD
         self.hud.enable()
+
+        # Reset focus if you’re returning to play
+        self._clear_focus()
 
     def end_game(self, winner: Player):
         """
