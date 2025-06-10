@@ -1,10 +1,11 @@
 from ursina import *
 
 def map_generation():
-    ground = Entity(model='plane', collider='box', scale=2048, texture='models/quadrillage', texture_scale=(4,4), color=color.rgba(255, 255, 255, 64))
+    ground = Entity(model='plane', collider='box',name='wall', scale=2048, texture='models/quadrillage', texture_scale=(4,4), color=color.rgba(255, 255, 255, 64))
     wall = Entity(
         model='quad',
         collider='box',
+        name='wall',
         scale=2048,
         texture='models/quadrillage',
         texture_scale=(4,4),
@@ -15,6 +16,7 @@ def map_generation():
     wall2 = Entity(
         model='quad',
         collider='box',
+        name='wall',
         scale=2048,
         texture='models/quadrillage',
         texture_scale=(4,4),
@@ -25,6 +27,7 @@ def map_generation():
     wall3 = Entity(
         model='quad',
         collider='box',
+        name='wall',
         scale=2048,
         texture='models/quadrillage',
         texture_scale=(4,4),
@@ -35,6 +38,7 @@ def map_generation():
     wall4 = Entity(
         model='quad',
         collider='box',
+        name='wall',
         scale=2048,
         texture='models/quadrillage',
         texture_scale=(4,4),
@@ -45,6 +49,7 @@ def map_generation():
     wall5 = Entity(
         model='quad',
         collider='box',
+        name='wall',
         scale=2048,
         texture='models/quadrillage',
         texture_scale=(4,4),
@@ -61,6 +66,7 @@ def map_generation():
             z=random.uniform(-1024,1024),
             y=random.uniform(0,2048),
             collider='sphere',
+            name='wall',
             scale_x=scale_x_value,
             scale_y=scale_x_value,
             scale_z=scale_x_value,
@@ -69,6 +75,6 @@ def map_generation():
         #e = scene.entities[-1]
         #if hasattr(e, 'collider') and e.collider:
             #e.collider.visible = True
-    lucrehulk = Entity(model='models/lucrehulk', texture = 'models/lucrehulk', collider='mesh', position=(0,250,0), scale=40)
+    lucrehulk = Entity(model='models/lucrehulk', texture = 'models/lucrehulk', name='wall', collider='mesh', position=(0,250,0), scale=40)
     lucrehulk.rotation = Vec3(90, 0, 0)  # Pour que le Lucrehulk regarde dans la direction opposée
     #lucrehulk.collider.visible = True

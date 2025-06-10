@@ -64,11 +64,11 @@ def players_input(player, player2, cam1, cam2, focus_circle_1, focus_circle_2):
         player.rotate(Vec3(0, 0, rotation_speed*3), relative_to=player)
     if held_keys['a']:
         player.rotate(Vec3(0, 0, -rotation_speed*3), relative_to=player)
-    if held_keys['t']:
+    if held_keys['t'] and not held_keys['h']:
         player.speed += 2 
         if player.speed > 300:
             player.speed = 300
-    if held_keys['y']:
+    if held_keys['y'] and not held_keys['h']:
         player.speed -= 2
         if player.speed < 10:
             player.speed = 10
@@ -92,19 +92,25 @@ def players_input(player, player2, cam1, cam2, focus_circle_1, focus_circle_2):
         player2.rotate(Vec3(0, 0, rotation_speed*3), relative_to=player2)
     if held_keys['left arrow']:
         player2.rotate(Vec3(0, 0, -rotation_speed*3), relative_to=player2)
-    if held_keys['o']:
+    if held_keys['o'] and not held_keys['m']:
         player2.speed += 2 
         if player2.speed > 300:
             player2.speed = 300
-    if held_keys['p']:
+    if held_keys['p'] and not held_keys['m']:
         player2.speed -= 2
         if player2.speed < 10:
             player2.speed = 10
     # ----- Déplacement dans la direction du gun -----
-    
-    player.position += player.gun.forward * player.speed * time.dt
-    player2.position += player2.gun.forward * player2.speed * time.dt
-
+    if held_keys['h']:
+        player.position += player.current_forward * player.speed * time.dt
+    else:
+        player.position += player.gun.forward * player.speed * time.dt
+        player.current_forward = player.gun.forward
+    if held_keys['m']:
+        player2.position += player2.current_forward * player2.speed * time.dt
+    else:
+        player2.position += player2.gun.forward * player2.speed * time.dt
+        player2.current_forward = player.gun.forward
     # ----- Tir -----
     # Tir joueur 1
     if held_keys['f'] and not player.gun.on_cooldown:
@@ -126,7 +132,7 @@ def entities_interaction(player, player2):
     for e in scene.entities:
         if player.intersects(e).hit:
             print(f"Collision1 avec une sphère à la position {e.position}, name: {e.name}, model: {e.model}")
-            if player.pv <= 0 or e.name != 'lazer':
+            if player.pv <= 0 or e.name == 'wall' or e.name == 'player2':
                 if e.name == 'player2':
                     return 3
                 return 1
@@ -135,11 +141,12 @@ def entities_interaction(player, player2):
             # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
         if player2.intersects(e).hit:
             print(f"Collision avec une sphère à la position {e.position}, name: {e.name}, model: {e.model}")
-            if player2.pv <= 0:
-                if e.name == 'player1' or e.name != 'lazer':
+            if player2.pv <= 0 or e.name == 'wall' or e.name == 'player1':
+                if e.name == 'player1':
                     return 3
                 return 2
             else:
                 player.pv -= 1
+                e.destroy()
             # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
     return 0  # Pas de collision détectée

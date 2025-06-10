@@ -4,6 +4,8 @@ from panda3d.core import BitMask32
 # from ursina.internal_utils import get_panda3d_node_path
 from math import atan2, degrees, radians, sin, cos
 from ursina import Vec3
+from direct.showbase.Loader import Loader
+from panda3d.core import MovieTexture
 
 
 def project_to_screen(entity, cam_np, lens, region_offset=Vec2(0,0), region_scale=Vec2(1,1)):
@@ -75,6 +77,11 @@ def hud_creation(player, player2):
         enabled=False
     )
 
+    hyperspeed = Entity(model='quad', parent=hud_right, texture='models/Hyperspeed_star_wars.mp4', scale = (2, 1), enabled=False) # set video texture
+    video_tex = hyperspeed.texture
+    video_tex.stop()
+    hyperspeed_preview = Entity(model='quad', parent=hud_right, texture='models/preview_anim', scale = (2, 1))
+
     boussole = Entity(
         model='plane',  # Utilise un modèle circulaire au lieu de 'quad'
         color=color.rgba(255,0,0,0),
@@ -106,9 +113,9 @@ def hud_creation(player, player2):
         scale = Vec3(0.8, 0.8, 0.8),  # Ajuste la taille du modèle
     )
 
-    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2
+    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, hyperspeed, video_tex, hyperspeed_preview
 
-def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, CAM1_MASK, CAM2_MASK):
+def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, CAM1_MASK, CAM2_MASK, video_tex):
      # ----- Gun orienté comme la caméra -----
     crosshair_p1.text = f'{player.speed}\n| |'
     crosshair_p2.text = f'{player2.speed}\n| |'
@@ -174,6 +181,7 @@ def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, 
     # ----- Pause panel -----
     pause_panel.enabled = False
     pauser_text.enabled = False
+    
 
 def update_hud_pause(pause_panel, pauser_text):
     pause_panel.enabled = True
