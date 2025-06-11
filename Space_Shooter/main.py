@@ -11,6 +11,7 @@ from world.map_gen import map_generation
 from entities.players import players_creation, players_input, entities_interaction, players_setup
 from ui.camera import camera_creation
 from ui.hud import hud_creation, update_hud_play, update_hud_pause, update_hud_end_game, update_hud_menu
+import random
 
 CAM1_MASK = BitMask32.bit(1)
 CAM2_MASK = BitMask32.bit(2)
@@ -18,6 +19,7 @@ CAM2_MASK = BitMask32.bit(2)
 app = Ursina()
 
 random.seed(0)
+rng_fx = random.Random()
 Entity.default_shader = lit_with_shadows_shader
 
 map_generation()
@@ -33,6 +35,9 @@ pivot_rotation_x = 10
 player_win = None
 
 crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, hyperspeed, video_tex, hyperspeed_preview = hud_creation(player, player2)
+music_menu = Audio('audio/Star_Wars_The_Imperial_March_Theme_Song.ogg', loop=True, autoplay=True, volume=0.5)
+music_play = Audio('audio/Battle_Of_The_Heroes.ogg', loop=True, autoplay=False, volume=0.5)
+list_music = ['Anakin_Vs_Obi-Wan.ogg', 'Battle_Of_The_Heroes.ogg', 'Imperial_Attack.ogg', 'The_Battle_Of_Endor_I.ogg', 'The_Battle_Of_Endor_III.ogg']
 
 class GameState:
     current = 'menu'
@@ -62,7 +67,7 @@ class GameState:
 
 
 def update():
-    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, hyperspeed, video_tex, hyperspeed_preview
+    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, hyperspeed, video_tex, hyperspeed_preview, music_menu, list_music
     cam1.look_at(player)
     cam2.look_at(player2)
     if GameState.current == 'play':
@@ -75,6 +80,8 @@ def update():
         if entities_interaction(player, player2) != 0:
             player_win = 'PLAYER 2 WIN' if entities_interaction(player, player2) == 1 else 'PLAYER 1 WIN' if entities_interaction(player, player2) == 2 else "ALL PLAYERS LOOSE"
             GameState.end_game()
+            music_play.stop()
+            music_menu.play()
             #print(player.pv, player2.pv)
     elif GameState.current == 'pause':
         # On ne fait rien, le jeu est en pause
@@ -97,12 +104,18 @@ def update():
             video_tex.play()
             players_setup(player, player2)
             def show_1():
-                invoke(hide_and_start, delay=3.2)
+                invoke(show_2, delay=1.7)
+            def show_2():
+                Audio('audio/Star_Wars_Hyperdrive_Sound_Effect.ogg', volume=0.5)
+                invoke(hide_and_start, delay=1.5)
             def hide_and_start():
                 pauser_text.enabled = False
                 focus_circle_1.enabled = True
                 focus_circle_2.enabled = True
                 hyperspeed.enabled = False
+                music_menu.stop()
+                global music_play
+                music_play = Audio(f'audio/{list_music[rng_fx.randint(0, len(list_music)-1)]}', loop=True, autoplay=True, volume=0.5)
                 GameState.start_game()
             show_1()
 

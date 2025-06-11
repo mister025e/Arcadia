@@ -116,12 +116,14 @@ def players_input(player, player2, cam1, cam2, focus_circle_1, focus_circle_2):
     if held_keys['f'] and not player.gun.on_cooldown:
         lazer_entity = Lazer(gun=player.gun, focus_circle=focus_circle_1, target=player2, touche_enable_aimbot=['r', 'g'], color=color.red)
         player.gun.on_cooldown = True
+        Audio('audio/Star_Wars_X_Wing_Firing_Sound_Effect.ogg', volume=0.5)
         invoke(setattr, player.gun, 'on_cooldown', False, delay=0.2)
 
     # Tir joueur 2
     if held_keys['k'] and not player2.gun.on_cooldown:
         lazer_entity = Lazer(gun=player2.gun, focus_circle=focus_circle_2, target=player, touche_enable_aimbot=['i', 'l'], color=color.green)
         player2.gun.on_cooldown = True
+        Audio('audio/blast_tie.ogg', volume=0.5)
         invoke(setattr, player2.gun, 'on_cooldown', False, delay=0.2)
 
     player.body.color = color.rgb(255-(6-player.pv)*30, 255-(6-player.pv)*30, 255-(6-player.pv)*30)
