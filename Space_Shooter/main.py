@@ -1,7 +1,7 @@
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from ursina.shaders import lit_with_shadows_shader
-from ursina import raycast
+from ursina import raycast, window
 from panda3d.core import PerspectiveLens, Camera, NodePath
 from panda3d.core import Point3, Point2
 from panda3d.core import BitMask32
@@ -141,5 +141,7 @@ player.cursor.enabled = False
 
 sun.color = color.white  # lumière blanche pure
 sun.intensity = 10       # valeur >1 pour plus de lumière (par défaut 1)
+
+window.fullscreen = True
 
 app.run()
