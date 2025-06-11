@@ -147,6 +147,5 @@ def entities_interaction(player, player2):
                 return 2
             else:
                 player.pv -= 1
-                e.destroy()
             # Tu peux ajouter ici une action (détruire la sphère, perdre de la vie, etc.)
     return 0  # Pas de collision détectée
