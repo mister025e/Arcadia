@@ -1,82 +1,45 @@
 from ursina import Entity, Button, color, Text
 
-
 class MainMenu:
-    """
-    Full screen semi‐transparent quad with four buttons:
-      - Play
-      - Instructions
-      - Leaderboard
-      - Quit
-    """
-
-    def __init__(self, ui_parent, on_play, on_instructions, on_leaderboard, on_quit):
-        # background panel
+    def __init__(self, ui_parent, on_play, on_settings, on_instructions, on_leaderboard, on_quit):
         self.menu_panel = Entity(
-            parent=ui_parent,
-            model='quad',
-            color=color.rgba(0, 0, 0, 0.6),
-            scale=(1, 1),
-            enabled=False
-        )
+            parent=ui_parent, model='quad',
+            color=color.rgba(0,0,0,0.6), scale=(1,1), enabled=False)
 
-        # Title text
         self.title = Text(
-            parent=ui_parent,
-            text='Top-Down Shooter',
-            scale=2,
-            position=(0, 0.4),
-            color=color.white,
-            enabled=False
-        )
+            parent=ui_parent, text='Top-Down Shooter',
+            scale=2, position=(0, 0.45), color=color.white, enabled=False)
 
-        # Play button
+        # Adjusted Y positions by 0.15 steps
         self.btn_play = Button(
-            parent=ui_parent,
-            text='Play',
-            scale=(0.25, 0.1),
-            position=(0, 0.15, 0),
-            color=color.azure,
-            on_click=on_play,
-            enabled=False
-        )
+            parent=ui_parent, text='Play',
+            scale=(0.25,0.1), position=(0, 0.2, 0),
+            color=color.azure, on_click=on_play, enabled=False)
 
-        # Instructions button
+        self.btn_settings = Button(
+            parent=ui_parent, text='Settings',
+            scale=(0.25,0.1), position=(0, 0.05, 0),
+            color=color.green, on_click=on_settings, enabled=False)
+
         self.btn_instructions = Button(
-            parent=ui_parent,
-            text='Instructions',
-            scale=(0.25, 0.1),
-            position=(0, 0.0, 0),
-            color=color.yellow,
-            on_click=on_instructions,
-            enabled=False
-        )
+            parent=ui_parent, text='Instructions',
+            scale=(0.25,0.1), position=(0, -0.1, 0),
+            color=color.yellow, on_click=on_instructions, enabled=False)
 
-        # Leaderboard button
         self.btn_leaderboard = Button(
-            parent=ui_parent,
-            text='Leaderboard',
-            scale=(0.25, 0.1),
-            position=(0, -0.15, 0),
-            color=color.violet,
-            on_click=on_leaderboard,
-            enabled=False
-        )
+            parent=ui_parent, text='Leaderboard',
+            scale=(0.25,0.1), position=(0, -0.25, 0),
+            color=color.violet, on_click=on_leaderboard, enabled=False)
 
-        # Quit button
         self.btn_quit = Button(
-            parent=ui_parent,
-            text='Quit',
-            scale=(0.25, 0.1),
-            position=(0, -0.30, 0),
-            color=color.red,
-            on_click=on_quit,
-            enabled=False
-        )
+            parent=ui_parent, text='Quit',
+            scale=(0.25,0.1), position=(0, -0.4, 0),
+            color=color.red, on_click=on_quit, enabled=False)
 
-        # Ordered list for keyboard navigation (top to bottom)
+        # Include Settings in navigation order
         self.buttons = [
             self.btn_play,
+            self.btn_settings,
             self.btn_instructions,
             self.btn_leaderboard,
             self.btn_quit

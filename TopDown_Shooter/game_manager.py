@@ -8,6 +8,7 @@ from ui.gameover import GameOverScreen
 from ui.name_entry import NameEntryScreen
 from ui.leaderboard import LeaderboardScreen
 from ui.instructions import InstructionsScreen
+from ui.settings import SettingsScreen
 from utils.file_manager import load_leaderboard, add_score_to_leaderboard
 
 
@@ -74,6 +75,7 @@ class GameManager:
         self.main_menu = MainMenu(
             ui_parent=camera.ui,
             on_play=self.start_game,
+            on_settings=self.show_settings,
             on_instructions=self.show_instructions,
             on_leaderboard=self.show_leaderboard_from_menu,
             on_quit=application.quit    # call quit directly
@@ -84,6 +86,10 @@ class GameManager:
             on_main_menu=self.show_main_menu,
             on_save=self.show_name_entry,
             on_view_leaderboard=self.show_leaderboard
+        )
+        self.settings_screen = SettingsScreen(
+            ui_parent = camera.ui,
+            on_done = self.back_from_settings
         )
         self.name_entry = NameEntryScreen(
             ui_parent=camera.ui,
@@ -455,6 +461,23 @@ class GameManager:
         self.main_menu.show()
         self._set_focus(self.main_menu.buttons)
 
+    def show_settings(self):
+        """
+        Hide Main Menu (or any) and display the settings screen.
+        """
+        self.game_state = 'settings'
+        self._hide_all_entities_and_ui()
+        self.settings_screen.show()
+
+    def back_from_settings(self):
+        """
+        From settings, return to Main Menu.
+        """
+        self.game_state = 'menu'
+        self.settings_screen.hide()
+        self.main_menu.show()
+        self._set_focus(self.main_menu.buttons)
+
     # ─── URSINA UPDATE & INPUT ─────────────────────────────────────────────────
 
     def update(self):
@@ -487,11 +510,15 @@ class GameManager:
         - If we’re in name‐entry, delegate there.
         - Otherwise, handle W/S/A/D/Space for UI navigation if a screen with buttons is active.
         """
+        if self.game_state == 'settings':
+            self.settings_screen.input(key)
+            return
+
         if self.game_state == 'name_entry':
             self.name_entry.input(key)
             return
 
-        if self.game_state in ('menu', 'gameover', 'leaderboard', 'instructions'):
+        if self.game_state in ('menu', 'gameover', 'leaderboard', 'instructions','settings'):
             # On Game Over, ignore Space if still within delay
             if self.game_state == 'gameover' and key in ('space', 'space hold'):
                 if time.time() - self.gameover_shown_time < self.gameover_space_delay:
