@@ -156,5 +156,7 @@ sun.color = color.white  # lumière blanche pure
 sun.intensity = 10       # valeur >1 pour plus de lumière (par défaut 1)
 
 window.fullscreen = True
+window.fps_counter.enabled = False  # désactive les FPS
+window.exit_button.visible = False  # désactive le bouton de fermeture de la fenêtre
 
 app.run()
