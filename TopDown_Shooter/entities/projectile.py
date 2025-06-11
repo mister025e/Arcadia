@@ -76,7 +76,7 @@ class Projectile(Entity):
                 return
 
             # If it hits a wall or cover (tagged 'wall'), disable + destroy
-            if hasattr(ent, 'tag') and ent.tag == 'wall':
+            if hasattr(ent, 'tag') and ent.tag in ('wall', 'cover'):
                 self.enabled = False
                 destroy(self)
                 return
