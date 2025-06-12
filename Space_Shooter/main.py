@@ -34,7 +34,7 @@ cam1, cam2, lens1, lens2 = camera_creation(player, player2, CAM1_MASK, CAM2_MASK
 pivot_rotation_x = 10
 player_win = None
 
-crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, hyperspeed, video_tex, hyperspeed_preview = hud_creation(player, player2)
+crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, hyperspeed, video_tex, hyperspeed_preview, control = hud_creation(player, player2)
 music_menu = Audio('audio/Star_Wars_The_Imperial_March_Theme_Song.ogg', loop=True, autoplay=True, volume=0.5)
 music_play = Audio('audio/Battle_Of_The_Heroes.ogg', loop=True, autoplay=False, volume=0.5)
 list_music = ['Anakin_Vs_Obi-Wan.ogg', 'Battle_Of_The_Heroes.ogg', 'Imperial_Attack.ogg', 'The_Battle_Of_Endor_I.ogg', 'The_Battle_Of_Endor_III.ogg']
@@ -67,7 +67,7 @@ class GameState:
 
 
 def update():
-    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, hyperspeed, video_tex, hyperspeed_preview, music_menu, list_music
+    global pivot_rotation_x, crosshair_p1, crosshair_p2, pause_panel, pauser_text, player_win, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, hyperspeed, video_tex, hyperspeed_preview, music_menu, list_music, control
     cam1.look_at(player)
     cam2.look_at(player2)
     if GameState.current == 'play':
@@ -85,7 +85,14 @@ def update():
             #print(player.pv, player2.pv)
     elif GameState.current == 'pause':
         # On ne fait rien, le jeu est en pause
-        update_hud_pause(pause_panel, pauser_text)
+        # si n'importe quel touche est pressé
+        if any(held_keys.values()) and not held_keys['q'] and not held_keys['z']:
+            control.enabled = True
+            pauser_text.enabled = False
+        # si aucune touche pressée
+        else:
+            control.enabled = False
+            update_hud_pause(pause_panel, pauser_text)
     elif GameState.current == 'end_game':
         hyperspeed_preview.enabled = True
         update_hud_end_game(pause_panel, pauser_text, player_win)

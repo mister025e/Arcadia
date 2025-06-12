@@ -58,6 +58,15 @@ def hud_creation(player, player2):
         color=color.rgba(255, 255, 0, 200),
     )
 
+    control = Entity(
+        model='quad',
+        texture='models/control',  # <-- c'est ici qu'on met l'image
+        parent=hud_right,
+        color=color.rgba(255, 255, 255, 255),
+        scale=(1, 0.7),
+        enabled=False,  # désactivé par défaut
+    )
+
     pause_panel = Entity(
         model='quad',
         texture='models/overlay',  # <-- c'est ici qu'on met l'image
@@ -113,7 +122,7 @@ def hud_creation(player, player2):
         scale = Vec3(0.8, 0.8, 0.8),  # Ajuste la taille du modèle
     )
 
-    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, hyperspeed, video_tex, hyperspeed_preview
+    return crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, hyperspeed, video_tex, hyperspeed_preview, control
 
 def update_hud_play(crosshair_p1, crosshair_p2, focus_circle_1, focus_circle_2, player, player2, cam1, cam2, lens1, lens2, pause_panel, pauser_text, boussole, modelwayfinderP1, modelwayfinderP2, boussole2, CAM1_MASK, CAM2_MASK, video_tex):
      # ----- Gun orienté comme la caméra -----
