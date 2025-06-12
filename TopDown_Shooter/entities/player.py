@@ -19,14 +19,19 @@ class Player(Entity):
             collider='box'
         )
         self.name = name
-        self.health = 100
-        self.keys = keys  # {'up':'w','down':'s','left':'a','right':'d','shoot':'space'}
-        self.move_speed = 5           # units per second
-        self.turn_speed = 120         # degrees per second
-        self.shoot_cooldown = 0.3
-        self._last_shot = time.time()
+        self.keys = keys
         self.hp_penalty = hp_penalty
         self.spawn_callback = spawn_callback
+
+        # These will be overridden by Settings on start_game
+        self.turn_speed = 120  # degrees/sec
+        self.move_speed = 5  # units/sec
+        self.health_max = 100
+        self.health = self.health_max
+        self.shoot_cooldown = 0.3  # sec between shots
+        self._last_shot = time.time()
+        self.shot_power = 10  # damage per hit
+        self.projectile_speed = 10  # speed of each projectile
 
     def update(self):
         # no-op so Ursina doesn’t auto-call game_update
@@ -40,9 +45,9 @@ class Player(Entity):
 
         # 1) Rotation (directions swapped)
         if held_keys[self.keys['left']]:
-            self.rotation_y -= self.turn_speed * dt   # was +=
+            self.rotation_y -= self.turn_speed * dt
         if held_keys[self.keys['right']]:
-            self.rotation_y += self.turn_speed * dt   # was -=
+            self.rotation_y += self.turn_speed * dt
 
         # 2) Movement forward/back
         move_dir = Vec3(0, 0, 0)
@@ -66,7 +71,6 @@ class Player(Entity):
             # collision check: walls or covers
             hit = self.intersects()
             if hit.hit and hasattr(hit.entity, 'tag') and hit.entity.tag in ('wall', 'cover'):
-                # revert if collided
                 self.position = old_pos
 
         # 3) Shooting
@@ -77,11 +81,13 @@ class Player(Entity):
                 self._last_shot = now
 
     def _shoot(self):
-        spawn_pos = self.position + self.forward * 1.1  # a bit ahead
+        spawn_pos = self.position + self.forward * 1.1
         proj = Projectile(
             position=Vec3(spawn_pos.x, 0.5, spawn_pos.z),
             direction=self.forward,
-            owner=self
+            owner=self,
+            speed=self.projectile_speed,
+            damage=self.shot_power
         )
         if self.spawn_callback:
             self.spawn_callback(proj)

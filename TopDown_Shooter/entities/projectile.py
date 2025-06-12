@@ -6,17 +6,19 @@ class Projectile(Entity):
     A small sphere that travels in ‘direction’ and damages the other player.
     """
 
-    def __init__(self, position, direction, owner):
+    def __init__(self, position, direction, owner, speed=10, damage=10):
         super().__init__(
             model='sphere',
             color=color.red,
-            scale=0.2,
+            scale=0.3,
             position=position,
             collider='sphere'
         )
-        self.direction = direction.normalized()
-        self.speed = 10
         self.owner = owner
+        self.direction = direction.normalized()
+        self.speed = speed
+        self.damage = damage
+        self.tag = 'projectile'
 
     def update(self):
         """
@@ -62,20 +64,17 @@ class Projectile(Entity):
 
         if hit.hit:
             ent = hit.entity
-
-            # Avoid circular import at top
             from .player import Player
-
-            # If it hits a Player (and not the one who fired)
+            # hit other player?
             if isinstance(ent, Player) and ent is not self.owner:
-                ent.health -= 20
-                self.enabled = False
-                destroy(self)
+                ent.health -= self.damage
                 if ent.health <= 0:
                     end_game_callback(self.owner)
+                # disable then destroy so GameManager removes us
+                self.enabled = False
+                destroy(self)
                 return
-
-            # If it hits a wall or cover (tagged 'wall'), disable + destroy
+            # hit wall or cover?
             if hasattr(ent, 'tag') and ent.tag in ('wall', 'cover'):
                 self.enabled = False
                 destroy(self)

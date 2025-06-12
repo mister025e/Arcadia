@@ -10,6 +10,7 @@ from ui.leaderboard import LeaderboardScreen
 from ui.instructions import InstructionsScreen
 from ui.settings import SettingsScreen
 from utils.file_manager import load_leaderboard, add_score_to_leaderboard
+from utils.settings_manager import load_settings, DEFAULTS, STAT_LIMITS
 
 
 class GameManager:
@@ -288,6 +289,29 @@ class GameManager:
         self.last_score = 0
         self.score_saved = False
 
+        # Load fresh settings
+        settings = load_settings()  # {'Player 1':{...}, 'Player 2':{...}}
+
+        # Apply to Player 1
+        s1 = settings['Player 1']
+        self.p1.turn_speed = s1['rotation_speed']
+        self.p1.move_speed = s1['movement_speed']
+        self.p1.health_max = s1['health_points']
+        self.p1.health = self.p1.health_max
+        self.p1.shoot_cooldown = s1['shot_delay']
+        self.p1.shot_power = s1['shot_power']
+        self.p1.projectile_speed = s1['projectile_speed']
+
+        # Apply to Player 2
+        s2 = settings['Player 2']
+        self.p2.turn_speed = s2['rotation_speed']
+        self.p2.move_speed = s2['movement_speed']
+        self.p2.health_max = s2['health_points']
+        self.p2.health = self.p2.health_max
+        self.p2.shoot_cooldown = s2['shot_delay']
+        self.p2.shot_power = s2['shot_power']
+        self.p2.projectile_speed = s2['projectile_speed']
+
         # Hide all UI screens
         self.main_menu.hide()
         self.gameover_screen.hide()
@@ -298,8 +322,8 @@ class GameManager:
         # Reset players
         p1_spawn = (-5, 0.5, -5)
         p2_spawn = ( 5, 0.5,  5)
-        self.p1.health = 100
-        self.p2.health = 100
+        self.p1.health = self.p1.health_max
+        self.p2.health = self.p2.health_max
         self.p1.position = p1_spawn
         self.p2.position = p2_spawn
 
@@ -346,15 +370,39 @@ class GameManager:
         # Disable HUD
         self.hud.disable()
 
-        # Compute score
+        # Base score calculation
         elapsed = self.match_end_time - self.match_start_time
-        hp_lost = 100 - winner.health
+        hp_lost = winner.health_max - winner.health
         penalty = winner.hp_penalty
         base_score = 1000
-        raw_score = base_score - int(elapsed * 10) - (hp_lost * penalty)
-        self.last_score = max(0, raw_score)
+        raw = base_score - int(elapsed * 5) - (hp_lost * penalty)
+        raw = max(0, raw)
 
-        # Show Game Over UI and start space-delay timer
+        # Load the saved stats (or defaults) and grab defaults
+        settings = load_settings()  # e.g. {'Player 1':{...}, 'Player 2':{...}}
+        player_stats = settings[winner.name]
+        default_stats = DEFAULTS[winner.name]
+
+        product = 1.0
+        for stat in STAT_LIMITS:
+            cur = player_stats[stat]
+            df = default_stats[stat]
+            if stat == 'shot_delay':
+                # higher delay = disadvantage → multiplier >1; lower = advantage → <1
+                m = cur / df if df != 0 else 1.0
+            else:
+                # higher stat = advantage → multiplier <1; lower = disadvantage → >1
+                m = df / cur if cur != 0 else 1.0
+            product *= m
+
+        # Clamp overall multiplier between 0.1 and 2.0
+        multiplier = max(0.1, min(product, 2.0))
+
+        # Apply multiplier
+        final_score = int(raw * multiplier)
+        self.last_score = max(0, final_score)
+
+        # Show Game Over UI
         self.gameover_screen.show(winner.name, self.last_score, self.score_saved)
         self.gameover_shown_time = time.time()
         self._set_focus(self.gameover_screen.buttons)
