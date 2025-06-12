@@ -1,48 +1,58 @@
 import os
-import json
+import csv
 
 # We assume this module is imported from TopDown_Shooter context.
-# Find the directory where this file lives, so we can place leaderboard.json there.
+# Path to leaderboard.csv in the data folder
 HERE = os.path.dirname(os.path.abspath(__file__))
-LEADERBOARD_PATH = os.path.join(HERE, '..', 'data', 'leaderboard.json')
+LEADERBOARD_PATH = os.path.join(HERE, '..', 'data', 'leaderboard.csv')
 
 
 def load_leaderboard():
     """
-    Read leaderboard.json (if it exists) and return a list of {name:str,score:int}.
-    Otherwise return an empty list.
+    Read leaderboard.csv (if it exists) and return a list of {'name':str,'score':int},
+    sorted descending by score, top 10 only.
     """
     path = os.path.abspath(LEADERBOARD_PATH)
-    if os.path.exists(path):
-        try:
-            with open(path, 'r') as f:
-                data = json.load(f)
-            cleaned = []
-            for e in data:
-                if isinstance(e, dict) and 'name' in e and 'score' in e:
-                    cleaned.append({'name': e['name'], 'score': e['score']})
-            return sorted(cleaned, key=lambda x: x['score'], reverse=True)[:10]
-        except Exception:
-            return []
-    else:
+    if not os.path.exists(path):
         return []
+    entries = []
+    with open(path, newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            name = row.get('name', '').strip()
+            try:
+                score = int(row.get('score', '0'))
+            except ValueError:
+                continue
+            if name:
+                entries.append({'name': name, 'score': score})
+    # sort and return top 10
+    entries.sort(key=lambda e: e['score'], reverse=True)
+    return entries[:10]
 
 
-def save_leaderboard(leaderboard_list):
+def save_leaderboard(entries):
     """
-    Overwrite leaderboard.json with the given top‐10 list of {name,score}.
+    Write the given list of {'name','score'} to leaderboard.csv (top 10).
+    Creates the data directory if needed.
     """
     os.makedirs(os.path.dirname(LEADERBOARD_PATH), exist_ok=True)
-    with open(os.path.abspath(LEADERBOARD_PATH), 'w') as f:
-        json.dump(leaderboard_list[:10], f, indent=2)
+    path = os.path.abspath(LEADERBOARD_PATH)
+    # Only keep top 10
+    to_write = sorted(entries, key=lambda e: e['score'], reverse=True)[:10]
+    with open(path, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=['name', 'score'])
+        writer.writeheader()
+        for e in to_write:
+            writer.writerow({'name': e['name'], 'score': e['score']})
 
 
 def add_score_to_leaderboard(name, score):
     """
-    Insert a new (name,score) into the existing top‐10.
-    If it belongs in the top‐10, keep the list sorted and truncated to 10.
+    Add (name, score) to the CSV leaderboard if it belongs in the top 10.
     """
-    lb = load_leaderboard()
-    lb.append({'name': name, 'score': score})
-    lb_sorted = sorted(lb, key=lambda x: x['score'], reverse=True)[:10]
-    save_leaderboard(lb_sorted)
+    if not name:
+        return
+    entries = load_leaderboard()
+    entries.append({'name': name, 'score': score})
+    save_leaderboard(entries)

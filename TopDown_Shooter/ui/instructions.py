@@ -28,23 +28,23 @@ class InstructionsScreen:
             enabled=False
         )
 
-        # Body instructions—updated for joystick/button controls
+        # Body instructions
         self.body_text = Text(
             parent=ui_parent,
             text=(
                 "Player 1 (Blue):\n"
-                "  Move: Joystick 1\n"
-                "  Shoot: Button 1\n\n"
+                "  Move: Joystick #1\n"
+                "  Shoot: Button A\n\n"
                 "Player 2 (Orange):\n"
-                "  Move: Joystick 2\n"
-                "  Shoot: Button 1\n\n"
-                "Menu Navigation:\n"
-                "  Use P1’s D-pad (hat) to move cursor\n"
-                "  Use Button 2 to select\n\n"
-                "Objective:\n"
-                "  Reduce your opponent’s HP to 0.\n"
-                "  Use the covers (brown blocks) to hide.\n"
-                "  Stay inside the borders!"
+                "  Move: Joystick #2\n"
+                "  Shoot: Button A\n\n"
+                "Menu Nav:\n"
+                "  P1 Stick UP/DOWN to move\n"
+                "  P1 Button A to select\n\n"
+                "Save Score:\n"
+                "  Stick UP/DOWN to change letter\n"
+                "  Stick LEFT/RIGHT to change slot\n"
+                "  Button A to confirm\n"
             ),
             position=(0, 0),
             origin=(0, 0),
