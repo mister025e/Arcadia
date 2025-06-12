@@ -1,4 +1,4 @@
-from ursina import Entity, Text, Button, color
+from ursina import Entity, Text, color
 
 class NameEntryScreen:
     """

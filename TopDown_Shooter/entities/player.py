@@ -1,5 +1,4 @@
 from ursina import Entity, Vec3, held_keys, time
-import math
 from .projectile import Projectile
 
 

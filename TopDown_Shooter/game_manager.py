@@ -1,6 +1,5 @@
-from ursina import Ursina, camera, application, time, destroy
+from ursina import camera, application, time, destroy
 from entities.player import Player
-from entities.projectile import Projectile
 from map.world import World
 from ui.hud import HUD
 from ui.menu import MainMenu
@@ -144,6 +143,7 @@ class GameManager:
         self.name_entry.hide()
         self.leaderboard_screen.hide()
         self.instructions_screen.hide()
+        self.settings_screen.hide()
         # Clear any button focus
         self._clear_focus()
 
@@ -284,15 +284,22 @@ class GameManager:
         Enter the 'playing' state: reset HP & timer, enable world & players & HUD.
         Also destroy any old covers (tag=='cover') and regenerate them.
         """
+        # 1) Core state reset
         self.game_state = 'playing'
         self.match_start_time = time.time()
         self.last_score = 0
         self.score_saved = False
 
-        # Load fresh settings
-        settings = load_settings()  # {'Player 1':{...}, 'Player 2':{...}}
+        # 2) Clear any lingering projectiles
+        for proj in self.projectiles:
+            proj.enabled = False
+            destroy(proj)
+        self.projectiles.clear()
 
-        # Apply to Player 1
+        # 3) Load & apply settings to both players
+        settings = load_settings()  # {'Player 1': {...}, 'Player 2': {...}}
+
+        # Player 1 settings
         s1 = settings['Player 1']
         self.p1.turn_speed = s1['rotation_speed']
         self.p1.move_speed = s1['movement_speed']
@@ -302,7 +309,7 @@ class GameManager:
         self.p1.shot_power = s1['shot_power']
         self.p1.projectile_speed = s1['projectile_speed']
 
-        # Apply to Player 2
+        # Player 2 settings
         s2 = settings['Player 2']
         self.p2.turn_speed = s2['rotation_speed']
         self.p2.move_speed = s2['movement_speed']
@@ -312,45 +319,40 @@ class GameManager:
         self.p2.shot_power = s2['shot_power']
         self.p2.projectile_speed = s2['projectile_speed']
 
-        # Hide all UI screens
+        # 4) Hide all UI screens
         self.main_menu.hide()
         self.gameover_screen.hide()
         self.name_entry.hide()
         self.leaderboard_screen.hide()
         self.instructions_screen.hide()
+        self.settings_screen.hide()
 
-        # Reset players
+        # 5) Reset player positions & rotations
         p1_spawn = (-5, 0.5, -5)
-        p2_spawn = ( 5, 0.5,  5)
-        self.p1.health = self.p1.health_max
-        self.p2.health = self.p2.health_max
+        p2_spawn = (5, 0.5, 5)
         self.p1.position = p1_spawn
         self.p2.position = p2_spawn
+        self.p1.rotation_y = 0  # face “north”
+        self.p2.rotation_y = 180  # face “south”
 
-        # --- Remove old covers ---
+        # 6) Regenerate covers
         survivors = []
-        from ursina import destroy
         for e in self.world.entities:
             if getattr(e, 'tag', '') == 'cover':
                 destroy(e)
             else:
                 survivors.append(e)
         self.world.entities = survivors
-
-        # --- Recreate covers ---
-        # Pass the same exclude positions so they never overlap the spawns
-        self.world.exclude_positions = [(p1_spawn[0], p1_spawn[2]),
-                                        (p2_spawn[0], p2_spawn[2])]
         self.world._create_covers()
 
-        # Enable map entities and players
+        # 7) Enable all map entities and players
         for e in self.world.entities + [self.p1, self.p2]:
             e.enabled = True
 
-        # Rebuild game_entities so it includes the fresh covers
+        # 8) Rebuild game_entities list
         self.game_entities = self.world.entities + [self.p1, self.p2]
 
-        # Enable HUD
+        # 9) Enable the HUD
         self.hud.enable()
 
         # Reset focus if you’re returning to play

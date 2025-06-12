@@ -1,5 +1,4 @@
 from ursina import Entity, color, time, destroy
-from ursina import Vec3
 
 class Projectile(Entity):
     """
